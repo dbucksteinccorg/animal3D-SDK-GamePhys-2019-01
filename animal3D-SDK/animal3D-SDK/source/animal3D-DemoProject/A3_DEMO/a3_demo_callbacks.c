@@ -38,6 +38,61 @@
 
 
 //-----------------------------------------------------------------------------
+// class functions
+
+// memory testing: reverse engineering heap allocation with 'malloc' and 'free'
+void a3testMemory()
+{
+	// 1. determine size of structure
+	typedef struct memblocksize
+	{
+		a3size word[1];
+	} memblocksize;
+
+	typedef struct memblockdescriptor		memblockdescriptor;
+	typedef struct memblockdescriptornode	memblockdescriptornode;
+
+	// 2. determine actual structure node
+	struct memblockdescriptornode
+	{
+		int dummy;
+	};
+
+	// 3. additional padding
+	struct memblockdescriptor
+	{
+		int dummy;
+	};
+
+
+	// allocate a bunch of test blocks
+	void *testBlockA = malloc(sizeof(double));
+	memblockdescriptor *testBlockA_desc = (memblockdescriptor *)(testBlockA)-1;
+
+	void *testBlockB = malloc(sizeof(a3_DemoState));
+	memblockdescriptor *testBlockB_desc = (memblockdescriptor *)(testBlockB)-1;
+
+	void *testBlockC = malloc(1024);
+	memblockdescriptor *testBlockC_desc = (memblockdescriptor *)(testBlockC)-1;
+
+	// point at size descriptors ahead of each block
+	memblocksize *testBlockA_size = (memblocksize *)(testBlockA)-1,
+		*testBlockB_size = (memblocksize *)(testBlockB)-1,
+		*testBlockC_size = (memblocksize *)(testBlockC)-1;
+
+	// release test blocks
+	free(testBlockB);
+	free(testBlockA);
+	free(testBlockC);
+
+	testBlockA = testBlockB = testBlockC = 0;
+
+	// REVIEW OF POINTER TYPES: 
+	// int a;	//...
+}
+
+
+//-----------------------------------------------------------------------------
 // miscellaneous functions
 
 // get the size of the persistent state to allocate
@@ -169,6 +224,11 @@ A3DYLIBSYMBOL a3_DemoState *a3demoCB_load(a3_DemoState *demoState, a3boolean hot
 		// scene objects
 		a3demo_initScene(demoState);
 	}
+
+
+	// memory testing
+	a3testMemory();
+
 
 	// return persistent state pointer
 	return demoState;
