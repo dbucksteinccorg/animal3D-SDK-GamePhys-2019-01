@@ -43,6 +43,8 @@
 #include "_utilities/a3_DemoSceneObject.h"
 #include "_utilities/a3_DemoShaderProgram.h"
 
+#include "_demo_physics/a3_PhysicsWorld.h"
+
 
 //-----------------------------------------------------------------------------
 
@@ -64,7 +66,7 @@ extern "C"
 	{
 		demoStateMaxCount_object = 8,
 		demoStateMaxCount_camera = 1,
-		demoStateMaxCount_light = 1,
+		demoStateMaxCount_light = 4,
 		demoStateMaxCount_sceneObject = demoStateMaxCount_object + demoStateMaxCount_camera + demoStateMaxCount_light,
 
 		demoStateMaxCount_timer = 1,
@@ -72,6 +74,8 @@ extern "C"
 		demoStateMaxCount_vertexArray = 4,
 		demoStateMaxCount_drawable = 8,
 		demoStateMaxCount_shaderProgram = 8,
+	
+		demoStateMaxCount_texture = 4,
 	};
 
 	// additional counters for demo modes
@@ -147,6 +151,9 @@ extern "C"
 		a3_DemoPointLight pointLight[demoStateMaxCount_light];
 		a3mat4 pointLightMVP[demoStateMaxCount_light];
 		a3ui32 lightCount;
+
+		// physics world
+		a3_PhysicsWorld physicsWorld[1];
 
 
 		//---------------------------------------------------------------------
@@ -246,6 +253,23 @@ extern "C"
 					prog_drawColorAttrib[1],					// draw color attribute
 					prog_drawColorUnif_instanced[1],			// draw uniform color with instancing
 					prog_drawColorAttrib_instanced[1];			// draw color attribute with instancing
+				a3_DemoStateShaderProgram
+					prog_drawTexture[1],						// draw texture
+					prog_drawPhongMulti[1],						// draw Phong shading model (multiple lights)
+					prog_drawNonPhotoMulti[1];					// draw non-photorealistic shading model
+			};
+		};
+
+
+		// textures
+		union {
+			a3_Texture texture[demoStateMaxCount_texture];
+			struct {
+				a3_Texture
+					tex_skybox_clouds[1],
+					tex_ramp_dm[1],
+					tex_ramp_sm[1],
+					tex_checker[1];
 			};
 		};
 
@@ -270,11 +294,13 @@ extern "C"
 	// loading
 	void a3demo_loadGeometry(a3_DemoState *demoState);
 	void a3demo_loadShaders(a3_DemoState *demoState);
+	void a3demo_loadTextures(a3_DemoState *demoState);
 	void a3demo_refresh(a3_DemoState *demoState);
 
 	// unloading
 	void a3demo_unloadGeometry(a3_DemoState *demoState);
 	void a3demo_unloadShaders(a3_DemoState *demoState);
+	void a3demo_unloadTextures(a3_DemoState *demoState);
 	void a3demo_validateUnload(const a3_DemoState *demoState);
 
 	// other utils & setup

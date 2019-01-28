@@ -52,6 +52,12 @@
     <Filter Include="Source Files\common\A3_DEMO\a3_DemoState">
       <UniqueIdentifier>{444e44e6-0d85-4a57-9b28-126490cd3544}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\A3_DEMO\_demo_physics">
+      <UniqueIdentifier>{496c0a13-d108-4a20-8c9f-ebc7826ce076}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\common\A3_DEMO\_demo_physics">
+      <UniqueIdentifier>{6dd93112-32a6-4979-80d9-77af18c4d033}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="_src_win\main_dll.c">
@@ -81,6 +87,9 @@
     <ClCompile Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\a3_DemoState\a3_DemoState_initialize.c">
       <Filter>Source Files\common\A3_DEMO\a3_DemoState</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_PhysicsWorld.c">
+      <Filter>Source Files\common\A3_DEMO\_demo_physics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\animal3D-DemoProject\a3_dylib_config_export.h">
@@ -94,6 +103,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_utilities\a3_DemoShaderProgram.h">
       <Filter>Header Files\A3_DEMO\_utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_PhysicsWorld.h">
+      <Filter>Header Files\A3_DEMO\_demo_physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
