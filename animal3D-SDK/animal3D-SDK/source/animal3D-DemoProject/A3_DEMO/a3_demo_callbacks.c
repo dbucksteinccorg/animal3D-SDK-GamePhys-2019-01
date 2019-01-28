@@ -40,6 +40,7 @@
 //-----------------------------------------------------------------------------
 // class functions
 
+/*
 // memory testing: reverse engineering heap allocation with 'malloc' and 'free'
 void a3testMemory()
 {
@@ -90,6 +91,7 @@ void a3testMemory()
 	// REVIEW OF POINTER TYPES: 
 	// int a;	//...
 }
+*/
 
 
 //-----------------------------------------------------------------------------
@@ -221,13 +223,21 @@ A3DYLIBSYMBOL a3_DemoState *a3demoCB_load(a3_DemoState *demoState, a3boolean hot
 		// shaders
 		a3demo_loadShaders(demoState);
 
+		// textures
+		a3demo_loadTextures(demoState);
+
 		// scene objects
 		a3demo_initScene(demoState);
+
+		// start physics simulation on a separate thread
+		a3physicsWorldThreadInit(demoState->physicsWorld);
 	}
 
 
+/*
 	// memory testing
 	a3testMemory();
+*/
 
 
 	// return persistent state pointer
@@ -248,12 +258,16 @@ A3DYLIBSYMBOL a3_DemoState *a3demoCB_unload(a3_DemoState *demoState, a3boolean h
 	//	no need to reverse!
 	if (!hotbuild)
 	{
+		// terminate physics simulation thread
+		a3physicsWorldThreadTerm(demoState->physicsWorld);
+
 		// free fixed objects
 		a3textRelease(demoState->text);
 
 		// free graphics objects
 		a3demo_unloadGeometry(demoState);
 		a3demo_unloadShaders(demoState);
+		a3demo_unloadTextures(demoState);
 
 		// validate unload
 		a3demo_validateUnload(demoState);
@@ -424,6 +438,12 @@ A3DYLIBSYMBOL void a3demoCB_keyCharPress(a3_DemoState *demoState, a3i32 asciiKey
 		a3demo_loadShaders(demoState);
 		break;
 
+		// reload physics
+	case 'H':
+		a3physicsWorldThreadTerm(demoState->physicsWorld);
+		a3physicsWorldThreadInit(demoState->physicsWorld);
+		break;
+
 
 		// change pipeline mode
 	case '.': {
@@ -486,6 +506,9 @@ A3DYLIBSYMBOL void a3demoCB_keyCharPress(a3_DemoState *demoState, a3i32 asciiKey
 		// update animation
 	case 'm':
 		demoState->updateAnimation = 1 - demoState->updateAnimation;
+		
+		// ****TO-DO: toggle physics
+
 		break;
 	}
 }

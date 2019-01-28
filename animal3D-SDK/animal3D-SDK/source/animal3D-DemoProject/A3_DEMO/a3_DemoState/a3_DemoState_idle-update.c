@@ -149,6 +149,14 @@ void a3demo_update(a3_DemoState *demoState, a3f64 dt)
 	}
 
 
+	// ****TO-DO: 
+	// bridge physics with graphics: 
+	//	1) lock world
+	//	2) copy
+	//	3) unlock world
+	//	4) update
+
+
 	// correct rotations as needed
 	if (useVerticalY)
 	{

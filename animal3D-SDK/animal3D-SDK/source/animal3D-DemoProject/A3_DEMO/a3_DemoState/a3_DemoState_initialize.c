@@ -117,7 +117,7 @@ void a3demo_initScene(a3_DemoState *demoState)
 
 
 	// lights
-	demoState->lightCount = 1;
+	demoState->lightCount = demoStateMaxCount_light;
 
 	// first light is hard-coded
 	pointLight = demoState->pointLight;
