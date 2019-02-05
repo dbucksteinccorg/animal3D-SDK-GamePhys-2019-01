@@ -137,8 +137,8 @@ extern "C"
 		a3ui32 demoModeCount, demoSubModeCount[demoStateMaxModes], demoOutputCount[demoStateMaxModes][demoStateMaxSubModes];
 
 		// toggle grid in scene and axes superimposed
-		a3i32 displayGrid, displaySkybox, displayWorldAxes, displayObjectAxes;
-		a3i32 updateAnimation;
+		a3boolean displayGrid, displaySkybox, displayWorldAxes, displayObjectAxes;
+		a3boolean updateAnimation;
 
 		// grid properties
 		a3mat4 gridTransform;
@@ -154,6 +154,8 @@ extern "C"
 
 		// physics world
 		a3_PhysicsWorld physicsWorld[1];
+		a3_TextRenderer text_overlay[1];
+		a3boolean displayOverlay;
 
 
 		//---------------------------------------------------------------------

@@ -165,13 +165,15 @@ void a3demo_initScene(a3_DemoState *demoState)
 
 
 	// position scene objects
-	demoState->sphereObject->scale.x = 2.0f;
-	demoState->cylinderObject->scale.x = 4.0f;
-	demoState->cylinderObject->scale.y = demoState->cylinderObject->scale.z = 2.0f;
-	demoState->torusObject->scale.x = 2.0f;
+	demoState->sphereObject->scale.x = 1.0f;
+	demoState->cylinderObject->scale.x = 2.0f;
+	demoState->cylinderObject->scale.y = demoState->cylinderObject->scale.z = 1.0f;
+	demoState->torusObject->scale.x = 1.0f;
+	demoState->teapotObject->scale.x = 0.5f;
 	demoState->sphereObject->scaleMode = 1;		// uniform
 	demoState->cylinderObject->scaleMode = 2;	// non-uniform
 	demoState->torusObject->scaleMode = 1;		// uniform
+	demoState->teapotObject->scaleMode = 1;		// uniform
 
 	demoState->sphereObject->position.x = +8.0f;
 	demoState->torusObject->position.x = -8.0f;

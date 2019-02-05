@@ -197,12 +197,18 @@
     <ClCompile Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\a3_DemoState\a3_DemoState_loading.c" />
     <ClCompile Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\a3_DemoState\a3_DemoState_unloading.c" />
     <ClCompile Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\a3_demo_callbacks.c" />
+    <ClCompile Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_Force.c" />
+    <ClCompile Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_Integration.c" />
+    <ClCompile Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_Particle.c" />
     <ClCompile Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_PhysicsWorld.c" />
     <ClCompile Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_utilities\a3_DemoSceneObject.c" />
     <ClCompile Include="_src_win\main_dll.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\a3_DemoState.h" />
+    <ClInclude Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_Force.h" />
+    <ClInclude Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_Integration.h" />
+    <ClInclude Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_Particle.h" />
     <ClInclude Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_PhysicsWorld.h" />
     <ClInclude Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_utilities\a3_DemoSceneObject.h" />
     <ClInclude Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_utilities\a3_DemoShaderProgram.h" />
