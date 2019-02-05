@@ -231,6 +231,7 @@ A3DYLIBSYMBOL a3_DemoState *a3demoCB_load(a3_DemoState *demoState, a3boolean hot
 
 		// start physics simulation on a separate thread
 		a3physicsWorldThreadInit(demoState->physicsWorld);
+		a3textInitialize(demoState->text_overlay, 16, 1, 1, 0, 0);
 	}
 
 
@@ -260,6 +261,7 @@ A3DYLIBSYMBOL a3_DemoState *a3demoCB_unload(a3_DemoState *demoState, a3boolean h
 	{
 		// terminate physics simulation thread
 		a3physicsWorldThreadTerm(demoState->physicsWorld);
+		a3textRelease(demoState->text_overlay);
 
 		// free fixed objects
 		a3textRelease(demoState->text);
@@ -442,6 +444,7 @@ A3DYLIBSYMBOL void a3demoCB_keyCharPress(a3_DemoState *demoState, a3i32 asciiKey
 	case 'H':
 		a3physicsWorldThreadTerm(demoState->physicsWorld);
 		a3physicsWorldThreadInit(demoState->physicsWorld);
+		demoState->updateAnimation = 1;
 		break;
 
 
@@ -506,9 +509,17 @@ A3DYLIBSYMBOL void a3demoCB_keyCharPress(a3_DemoState *demoState, a3i32 asciiKey
 		// update animation
 	case 'm':
 		demoState->updateAnimation = 1 - demoState->updateAnimation;
-		
-		// ****TO-DO: toggle physics
+		a3physicsWorldLock(demoState->physicsWorld);
+		if (demoState->updateAnimation)
+			a3timerStart(demoState->physicsWorld->pw_timer);
+		else
+			a3timerPause(demoState->physicsWorld->pw_timer);
+		a3physicsWorldUnlock(demoState->physicsWorld);
+		break;
 
+		// display overlay
+	case 'o':
+		demoState->displayOverlay = 1 - demoState->displayOverlay;
 		break;
 	}
 }

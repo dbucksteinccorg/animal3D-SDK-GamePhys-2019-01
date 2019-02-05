@@ -358,6 +358,41 @@ void a3demo_render(const a3_DemoState *demoState)
 	a3textureDeactivate(a3tex_unit00);
 
 
+
+	// overlay text
+	if (demoState->displayOverlay && a3textIsInitialized(demoState->text_overlay))
+	{
+		const a3byte *displayText[] = {
+			"hard-coded position",
+			"explicit Euler",
+			"semi-implicit Euler",
+			"kinematic formula",
+		};
+		const a3vec4 *colorPtr;
+		a3vec4 textPos;
+
+		glDisable(GL_DEPTH_TEST);
+		for (i = 0, currentSceneObject = demoState->sphereObject;
+			currentSceneObject <= demoState->teapotObject;
+			++i, ++currentSceneObject)
+		{
+			// copy and adjust object position in world
+			textPos = currentSceneObject->modelMat.v3;
+			textPos.x += a3realOneHalf;
+
+			// do projection
+			a3real4Real4x4MulR(camera->viewProjectionMat.m, textPos.v);
+			a3real3DivS(textPos.v, textPos.w);
+
+			// select color and display
+			colorPtr = rgba4 + i;
+			a3textDraw(demoState->text_overlay, textPos.x, textPos.y, textPos.z,
+				colorPtr->r, colorPtr->g, colorPtr->b, colorPtr->a, displayText[i]);
+		}
+		glEnable(GL_DEPTH_TEST);
+	}
+
+
 	// text
 	if (demoState->textInit)
 	{
@@ -490,7 +525,13 @@ void a3demo_render_data(const a3_DemoState *demoState)
 
 	// display some data
 	a3textDraw(demoState->text, textAlign, textOffset += textOffsetDelta, textDepth, col.r, col.g, col.b, col.a,
-		"t = %+.3lf ", demoState->renderTimer->totalTime);
+		"t_render:    %+.4lf ", demoState->renderTimer->totalTime);
+	a3textDraw(demoState->text, textAlign, textOffset += textOffsetDelta, textDepth, col.r, col.g, col.b, col.a,
+		"dt_render:   %+.4lf ", demoState->renderTimer->previousTick);
+	a3textDraw(demoState->text, textAlign, textOffset += textOffsetDelta, textDepth, col.r, col.g, col.b, col.a,
+		"t_physics:   %+.4lf ", demoState->physicsWorld->pw_timer->totalTime);
+	a3textDraw(demoState->text, textAlign, textOffset += textOffsetDelta, textDepth, col.r, col.g, col.b, col.a,
+		"dt_physics:  %+.4lf ", demoState->physicsWorld->pw_timer->previousTick);
 }
 
 

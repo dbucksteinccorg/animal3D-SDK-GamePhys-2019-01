@@ -33,6 +33,9 @@
 #include "animal3D/a3utility/a3_Timer.h"
 #include "animal3D/a3utility/a3_Thread.h"
 
+// physics includes
+#include "a3_Particle.h"
+
 
 //-----------------------------------------------------------------------------
 
@@ -50,7 +53,7 @@ extern "C"
 	// counters
 	enum a3_PhysicsWorldMaxCount
 	{
-		physicsWorldMaxCount_tmpObject = 16,
+		physicsWorldMaxCount_particle = 16,
 	};
 
 
@@ -59,8 +62,8 @@ extern "C"
 	// state of a physics world: things that can be used for graphics ONLY
 	struct a3_PhysicsWorldState
 	{
-		// ****TO-DO: add appropriate member(s)
-		a3ui32 count_tmp;
+		a3vec3 position_particle[physicsWorldMaxCount_particle];
+		a3ui32 count_particle;
 	};
 
 
@@ -83,6 +86,19 @@ extern "C"
 
 		// initialized flag
 		a3boolean pw_init;
+
+
+		// particles
+		union {
+			a3_Particle particle[physicsWorldMaxCount_particle];
+			struct {
+				a3_Particle
+					testParticle_hardcoded[1],
+					testParticle_explicitEuler[1],
+					testParticle_semiimplicitEuler[1],
+					testParticle_kinematic[1];
+			};
+		};
 	};
 
 

@@ -39,9 +39,11 @@ void a3physicsInitialize_internal(a3_PhysicsWorld *world)
 	a3randomSetSeed(0);
 
 
+	// ****TO-DO: 
 	// reset all physics objects
 
 
+	// ****TO-DO: 
 	// reset state
 	a3physicsWorldStateReset(world->pw_state);
 
@@ -69,6 +71,7 @@ void a3physicsTerminate_internal(a3_PhysicsWorld *world)
 a3ret a3physicsThread_internal(a3_PhysicsWorld *world)
 {
 	// desired physics update rate (updates per second)
+	// -> use zero for "continuous mode"
 	const a3f64 rate = 100.0;
 
 	// pointer to timer for convenience
@@ -77,7 +80,40 @@ a3ret a3physicsThread_internal(a3_PhysicsWorld *world)
 	// second counter for physics (debugging)
 	a3ui32 currSecond = 0, prevSecond = 0;
 
+	// create world
+	a3physicsInitialize_internal(world);
 
+	// start timer
+	// rate should be set before beginning thread
+	a3timerSet(timerPtr, rate);
+	a3timerStart(timerPtr);
+
+	// if lock is negative, terminate
+	// originator of thread should decide this
+	while (world->pw_lock >= 0)
+	{
+		if (a3timerUpdate(timerPtr))
+		{
+			// update timer ticked, do the thing
+			a3physicsWorldUpdate(world, timerPtr->previousTick);
+
+			// debug display time in seconds every second
+			currSecond = (a3ui32)(timerPtr->totalTime);
+			if (currSecond > prevSecond)
+			{
+				prevSecond = currSecond;
+				printf("\n physics time: %.4lf;  ticks: %llu \n     ups avg: %.4lf;  dt avg: %.4lf",
+					timerPtr->totalTime,
+					timerPtr->ticks,
+					(a3f64)timerPtr->ticks / timerPtr->totalTime,
+					timerPtr->totalTime / (a3f64)timerPtr->ticks
+				);
+			}
+		}
+	}
+
+	// terminate world
+	a3physicsTerminate_internal(world);
 	return 0;
 }
 
@@ -90,20 +126,27 @@ a3ret a3physicsWorldUpdate(a3_PhysicsWorld *world, a3f64 dt)
 	// copy of state to edit before committing writing to world
 	a3_PhysicsWorldState state_copy[1] = { *world->pw_state };
 
-	// time as real
-	const a3real t_r = (a3real)(world->pw_timer->totalTime);
-	const a3real dt_r = (a3real)(dt);
-
 	// generic counter
 //	a3ui32 i;
 
+	// helper constants
+	const a3real frequency = a3realTwoPi * (a3realQuarter);
+	const a3real amplitude_p = (a3real)(10);
+	const a3real amplitude_v = amplitude_p * frequency;
+	const a3real amplitude_a = amplitude_v * frequency;
 
+	// time as real
+	const a3real t_r = (a3real)(world->pw_timer->totalTime);
+	const a3real t_r_clamp = a3trigValid_sinr(t_r * frequency);
+	const a3real dt_r = (a3real)(dt);
+
+
+	// ****TO-DO: 
 	// update physics objects
 
 
 	// ****TO-DO: 
 	// update state
-//	const a3real t_clamp = ???
 
 
 	// ****TO-DO: 
@@ -121,13 +164,17 @@ a3ret a3physicsWorldUpdate(a3_PhysicsWorld *world, a3f64 dt)
 a3ret a3physicsWorldStateReset(a3_PhysicsWorldState *worldState)
 {
 	// generic counter
-//	a3ui32 i;
+	a3ui32 i;
 
 	if (worldState)
 	{
 		// ****TO-DO: 
 		// reset all state data appropriately
+		for (i = 0; i < physicsWorldMaxCount_particle; ++i)
+		{
 
+		}
+		return i;
 	}
 	return -1;
 }
