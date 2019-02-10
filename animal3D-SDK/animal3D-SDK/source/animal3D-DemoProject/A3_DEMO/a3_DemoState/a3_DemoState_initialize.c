@@ -113,6 +113,7 @@ void a3demo_initScene(a3_DemoState *demoState)
 	demoState->displayWorldAxes = 1;
 	demoState->displayObjectAxes = 1;
 	demoState->displaySkybox = 1;
+	demoState->displayOverlay = 1;
 	demoState->updateAnimation = 1;
 
 
@@ -168,26 +169,28 @@ void a3demo_initScene(a3_DemoState *demoState)
 	demoState->sphereObject->scale.x = 1.0f;
 	demoState->cylinderObject->scale.x = 2.0f;
 	demoState->cylinderObject->scale.y = demoState->cylinderObject->scale.z = 1.0f;
-	demoState->torusObject->scale.x = 1.0f;
+	demoState->torusObject->scale.x = 0.8f;
 	demoState->teapotObject->scale.x = 0.5f;
 	demoState->sphereObject->scaleMode = 1;		// uniform
 	demoState->cylinderObject->scaleMode = 2;	// non-uniform
 	demoState->torusObject->scaleMode = 1;		// uniform
 	demoState->teapotObject->scaleMode = 1;		// uniform
 
-	demoState->sphereObject->position.x = +8.0f;
-	demoState->torusObject->position.x = -8.0f;
+//	demoState->sphereObject->position.x = +8.0f;
+//	demoState->torusObject->position.x = -8.0f;
 	if (demoState->verticalAxis)
 	{
-		demoState->planeObject->position.y = -4.0f;
-		demoState->cylinderObject->position.z = -8.0f;
-		demoState->teapotObject->position.z = +8.0f;
+		demoState->planeObject->position.y = -1.0f;
+	//	demoState->planeObject->position.y = -4.0f;
+	//	demoState->cylinderObject->position.z = -8.0f;
+	//	demoState->teapotObject->position.z = +8.0f;
 	}
 	else
 	{
-		demoState->planeObject->position.z = -4.0f;
-		demoState->cylinderObject->position.y = +8.0f;
-		demoState->teapotObject->position.y = -8.0f;
+		demoState->planeObject->position.z = -1.0f;
+	//	demoState->planeObject->position.z = -4.0f;
+	//	demoState->cylinderObject->position.y = +8.0f;
+	//	demoState->teapotObject->position.y = -8.0f;
 	}
 }
 

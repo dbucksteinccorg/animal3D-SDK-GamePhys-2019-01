@@ -363,10 +363,10 @@ void a3demo_render(const a3_DemoState *demoState)
 	if (demoState->displayOverlay && a3textIsInitialized(demoState->text_overlay))
 	{
 		const a3byte *displayText[] = {
-			"hard-coded position",
-			"explicit Euler",
-			"semi-implicit Euler",
-			"kinematic formula",
+			"springy",
+			"gravity",
+			"draggy",
+			"slippy",
 		};
 		const a3vec4 *colorPtr;
 		a3vec4 textPos;
@@ -446,18 +446,13 @@ void a3demo_render_controls(const a3_DemoState *demoState)
 	const a3ui32 demoOutput = demoState->demoOutputMode[demoMode][demoSubMode], demoOutputCount = demoState->demoOutputCount[demoMode][demoSubMode];
 
 	// text color
-	const a3vec4 col = {
-		demoState->displaySkybox ? a3realZero : a3realOne,
-		demoState->displaySkybox ? a3realQuarter : a3realOne,
-		demoState->displaySkybox ? a3realHalf : a3realOne,
-		a3realOne
-	};
+	const a3vec4 col = { a3realOne, a3realZero, a3realOne, a3realOne };
 
 	// amount to offset text as each line is rendered
 	a3f32 textAlign = -0.98f;
 	a3f32 textOffset = 1.00f;
 	a3f32 textDepth = -1.00f;
-	const a3f32 textOffsetDelta = -0.10f;
+	const a3f32 textOffsetDelta = -0.08f;
 
 	// modes
 	a3textDraw(demoState->text, textAlign, textOffset += textOffsetDelta, textDepth, col.r, col.g, col.b, col.a,
@@ -507,18 +502,13 @@ void a3demo_render_controls(const a3_DemoState *demoState)
 void a3demo_render_data(const a3_DemoState *demoState)
 {
 	// text color
-	const a3vec4 col = {
-		demoState->displaySkybox ? a3realZero : a3realOne,
-		demoState->displaySkybox ? a3realQuarter : a3realOne,
-		demoState->displaySkybox ? a3realHalf : a3realOne,
-		a3realOne
-	};
+	const a3vec4 col = { a3realOne, a3realZero, a3realOne, a3realOne };
 
 	// amount to offset text as each line is rendered
 	a3f32 textAlign = -0.98f;
 	a3f32 textOffset = 1.00f;
 	a3f32 textDepth = -1.00f;
-	const a3f32 textOffsetDelta = -0.10f;
+	const a3f32 textOffsetDelta = -0.08f;
 
 	// move down
 	textOffset = +0.9f;

@@ -33,19 +33,41 @@
 void a3physicsInitialize_internal(a3_PhysicsWorld *world)
 {
 	// generic counter
-//	a3ui32 i;
+	a3ui32 i;
 
 	// hard-set random seed for predictability (i.e. scenario replication)
 	a3randomSetSeed(0);
 
 
-	// ****TO-DO: 
 	// reset all physics objects
+	for (i = 0; i < physicsWorldMaxCount_particle; ++i)
+		a3particleReset(world->particle + i);
+
+	// initial values: set positions, related functions and values
+	// entirely force-controlled particles do not need a full set 
+	//	of initial values (e.g. can start with zero velocity)
+
+	world->testParticle_springy->position.x = +8.0f;
+	world->testParticle_springy->position.z = +6.0f;
+	a3particleSetMass(world->testParticle_springy, 1.0f);
+
+	world->testParticle_gravity->position.y = +8.0f;
+	world->testParticle_gravity->position.z = +6.0f;
+	a3particleSetMass(world->testParticle_gravity, 1.0f);
+
+	world->testParticle_draggy->position.x = -8.0f;
+	world->testParticle_draggy->position.z = +6.0f;
+	a3particleSetMass(world->testParticle_draggy, 1.0f);
+
+	world->testParticle_slippy->position.y = -8.0f;
+	world->testParticle_slippy->position.z = -1.0f;
+	a3particleSetMass(world->testParticle_slippy, 1.0f);
 
 
-	// ****TO-DO: 
 	// reset state
 	a3physicsWorldStateReset(world->pw_state);
+	world->pw_state->count_particle = 4;
+
 
 	// done
 	printf("\n physics thread initialized");
@@ -66,7 +88,6 @@ void a3physicsTerminate_internal(a3_PhysicsWorld *world)
 
 //-----------------------------------------------------------------------------
 
-// ****TO-DO: 
 // internal physics world thread function
 a3ret a3physicsThread_internal(a3_PhysicsWorld *world)
 {
@@ -127,31 +148,50 @@ a3ret a3physicsWorldUpdate(a3_PhysicsWorld *world, a3f64 dt)
 	a3_PhysicsWorldState state_copy[1] = { *world->pw_state };
 
 	// generic counter
-//	a3ui32 i;
-
-	// helper constants
-	const a3real frequency = a3realTwoPi * (a3realQuarter);
-	const a3real amplitude_p = (a3real)(10);
-	const a3real amplitude_v = amplitude_p * frequency;
-	const a3real amplitude_a = amplitude_v * frequency;
+	a3ui32 i;
 
 	// time as real
 	const a3real t_r = (a3real)(world->pw_timer->totalTime);
-	const a3real t_r_clamp = a3trigValid_sinr(t_r * frequency);
 	const a3real dt_r = (a3real)(dt);
 
+	// tmp force vectors
+//	a3vec3 f_gravity;
+//	a3vec3 f_normal;
+//	a3vec3 f_sliding;
+//	a3vec3 f_friction_s;
+//	a3vec3 f_friction_k;
+//	a3vec3 f_drag;
+//	a3vec3 f_spring;
+//	a3vec3 f_damp_l;
+
+	// tmp particle helpers
+//	a3_Particle *currentParticle;
+//	const a3vec3 springyAnchor = { 0.0f, 0.0f, 10.0f };
+//	const a3vec3 slippyForce = { 0.0f, 5.0f, 0.0f };
+
 
 	// ****TO-DO: 
-	// update physics objects
+	// update physics objects 
+	//	- reset and apply forces
+	//	- integrate
+	//	- force conversion
+	//	- additional tasks (e.g. clamp position)
 
 
-	// ****TO-DO: 
 	// update state
+	for (i = 0; i < state_copy->count_particle; ++i)
+	{
+		state_copy->position_particle[i] = world->particle[i].position;
+	}
 
 
-	// ****TO-DO: 
 	// write operation is locked
-
+	if (a3physicsWorldLock(world) > 0)
+	{
+		// copy state to world
+		*world->pw_state = *state_copy;
+		a3physicsWorldUnlock(world);
+	}
 
 	// done
 	return 0;
@@ -168,11 +208,10 @@ a3ret a3physicsWorldStateReset(a3_PhysicsWorldState *worldState)
 
 	if (worldState)
 	{
-		// ****TO-DO: 
 		// reset all state data appropriately
 		for (i = 0; i < physicsWorldMaxCount_particle; ++i)
 		{
-
+			worldState->position_particle[i] = a3zeroVec3;
 		}
 		return i;
 	}
@@ -185,18 +224,21 @@ a3ret a3physicsWorldStateReset(a3_PhysicsWorldState *worldState)
 // threaded physics simulation
 extern inline void a3physicsWorldThreadInit(a3_PhysicsWorld *world)
 {
-	// ****TO-DO: 
 	// reset flags then launch new thread for this world; 
 	//	wait for world and thread to initialize before continuing
-
+	world->pw_init = 0;
+	world->pw_lock = 0;
+	a3threadLaunch(world->pw_thread, (a3_threadfunc)a3physicsThread_internal, world, "a3physicsThread_internal");
+	while (!world->pw_init || !world->pw_thread->threadID);
 }
 
 extern inline void a3physicsWorldThreadTerm(a3_PhysicsWorld *world)
 {
-	// ****TO-DO: 
 	// terminate physics world by acquiring lock then invalidating it; 
 	//	wait for world and thread to terminate before continuing
-
+	a3physicsWorldLock(world);
+	world->pw_lock = -1;
+	while (world->pw_init || world->pw_thread->threadID);
 }
 
 
@@ -221,17 +263,25 @@ inline a3ret threadID()
 // mutex handling
 extern inline a3ret a3physicsWorldLock(a3_PhysicsWorld *world)
 {
-	// ****TO-DO: 
 	// wait for lock to be released, then set it
-
+	while (world->pw_lock > 0);
+	if (world->pw_lock == 0)
+	{
+		world->pw_lock = threadID();
+		return world->pw_lock;
+	}
 	return -1;
 }
 
 extern inline a3ret a3physicsWorldUnlock(a3_PhysicsWorld *world)
 {
-	// ****TO-DO: 
 	// release lock if caller is owner
-
+	const a3ret ret = (a3ret)world->pw_lock;
+	if (ret == threadID())
+	{
+		world->pw_lock = 0;
+		return ret;
+	}
 	return -1;
 }
 

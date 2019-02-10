@@ -43,11 +43,16 @@ extern "C"
 	
 //-----------------------------------------------------------------------------
 
-	// ****TO-DO: 
 	// particle for motion
 	struct a3_Particle
 	{
 		a3vec3 position;
+		a3vec3 velocity;
+		a3vec3 acceleration;
+	
+		// ****TO-DO: 
+		//	- add new members
+
 	};
 
 
@@ -68,7 +73,24 @@ extern "C"
 //-----------------------------------------------------------------------------
 
 	// particle helpers
+
+	// reset
 	inline void a3particleReset(a3_Particle *p);
+
+	// set mass
+	inline a3i32 a3particleSetMass(a3_Particle *p, const a3real mass);
+
+	// check if particle is moving
+	inline a3i32 a3particleIsMoving(const a3_Particle *p);
+
+	// apply force at center of mass
+	inline a3i32 a3particleApplyForceDirect(a3_Particle *p, const a3real3p f);
+
+	// convert force to acceleration
+	inline a3i32 a3particleConvertForce(a3_Particle *p);
+
+	// reset force
+	inline a3i32 a3particleResetForce(a3_Particle *p);
 
 
 //-----------------------------------------------------------------------------

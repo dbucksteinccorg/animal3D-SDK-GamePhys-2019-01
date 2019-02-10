@@ -93,10 +93,10 @@ extern "C"
 			a3_Particle particle[physicsWorldMaxCount_particle];
 			struct {
 				a3_Particle
-					testParticle_hardcoded[1],
-					testParticle_explicitEuler[1],
-					testParticle_semiimplicitEuler[1],
-					testParticle_kinematic[1];
+					testParticle_springy[1],
+					testParticle_gravity[1],
+					testParticle_draggy[1],
+					testParticle_slippy[1];
 			};
 		};
 	};

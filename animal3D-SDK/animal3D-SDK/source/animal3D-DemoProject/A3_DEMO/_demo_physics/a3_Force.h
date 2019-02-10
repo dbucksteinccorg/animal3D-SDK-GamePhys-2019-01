@@ -44,8 +44,37 @@ extern "C"
 
 //-----------------------------------------------------------------------------
 
+	// calculate critical damping for a particle
+	inline a3real a3calcCriticalDamping(const a3real mass, const a3real springCoeff);
+
 
 //-----------------------------------------------------------------------------
+
+	// force generators
+
+	// calculate force of gravity in freefall (using earth gravity)
+	inline a3real3r a3forceGravity(a3real3p f_out, const a3real3p unitUpward, const a3real mass);
+
+	// calculate normal force against plane
+	inline a3real3r a3forceNormal(a3real3p f_out, const a3real3p f_gravity, const a3real3p unitNormal);
+
+	// calculate sliding force on a plane
+	inline a3real3r a3forceSliding(a3real3p f_out, const a3real3p f_gravity, const a3real3p f_normal);
+
+	// calculate static friction (if particle is still)
+	inline a3real3r a3forceFrictionStatic(a3real3p f_out, const a3real3p f_normal, const a3real3p f_opposing, const a3real frictionCoeffStatic);
+
+	// calculate kinetic friction (if particle is moving)
+	inline a3real3r a3forceFrictionKinetic(a3real3p f_out, const a3real3p f_normal, const a3real3p particleVelocity, const a3real frictionCoeffKinetic);
+
+	// calculate drag force through fluid
+	inline a3real3r a3forceDrag(a3real3p f_out, const a3real3p particleVelocity, const a3real3p fluidVelocity, const a3real fluidDensity, const a3real objectArea, const a3real objectDragCoeff);
+
+	// calculate spring force using Hooke's law
+	inline a3real3r a3forceSpring(a3real3p f_out, const a3real3p particlePosition, const a3real3p anchorPosition, const a3real restingLength, const a3real springCoeff);
+
+	// calculate general damping force
+	inline a3real3r a3forceDampingLinear(a3real3p f_out, const a3real3p particleVelocity, const a3real dampingCoeff);
 
 
 //-----------------------------------------------------------------------------
