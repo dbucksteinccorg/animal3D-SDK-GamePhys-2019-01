@@ -149,12 +149,25 @@ void a3demo_update(a3_DemoState *demoState, a3f64 dt)
 	}
 
 
-	// ****TO-DO: 
 	// bridge physics with graphics: 
 	//	1) lock world
 	//	2) copy
 	//	3) unlock world
 	//	4) update
+	if (a3physicsWorldLock(demoState->physicsWorld) > 0)
+	{
+		a3_DemoSceneObject *currentObject;
+		const a3_PhysicsWorldState state_copy[1] = { *demoState->physicsWorld->pw_state };
+		a3physicsWorldUnlock(demoState->physicsWorld);
+
+		for (i = 0, currentObject = demoState->sphereObject;
+			i < state_copy->count_particle;
+			++i, ++currentObject)
+		{
+			currentObject->position = state_copy->position_particle[i];
+			a3demo_updateSceneObject(currentObject, 0);
+		}
+	}
 
 
 	// correct rotations as needed

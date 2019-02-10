@@ -58,11 +58,56 @@ extern inline void a3particleIntegrateEulerKinematic(a3_Particle *p, const a3rea
 
 // particle helpers
 
-// ****TO-DO: 
+// reset
 extern inline void a3particleReset(a3_Particle *p)
 {
 	p->position = a3zeroVec3;
+	p->velocity = a3zeroVec3;
+	p->acceleration = a3zeroVec3;
 
+	// ****TO-DO: 
+	//	- reset new members
+
+}
+
+// ****TO-DO: 
+// set mass
+extern inline a3i32 a3particleSetMass(a3_Particle *p, const a3real mass)
+{
+
+	return -1;
+}
+
+// ****TO-DO: 
+// check if particle is moving
+extern inline a3i32 a3particleIsMoving(const a3_Particle *p)
+{
+
+	return -1;
+}
+
+// ****TO-DO: 
+// apply force at center of mass
+extern inline a3i32 a3particleApplyForceDirect(a3_Particle *p, const a3real3p f)
+{
+
+	return 0;
+}
+
+// ****TO-DO: 
+// convert force to acceleration
+extern inline a3i32 a3particleConvertForce(a3_Particle *p)
+{
+
+	return 0;
+}
+
+// ****TO-DO: 
+// reset force
+extern inline a3i32 a3particleResetForce(a3_Particle *p)
+{
+
+	return -1;
 }
 
 

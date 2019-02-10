@@ -201,10 +201,10 @@ A3DYLIBSYMBOL a3_DemoState *a3demoCB_load(a3_DemoState *demoState, a3boolean hot
 
 		// text
 		a3demo_initializeText(demoState->text);
+		a3textInitialize(demoState->text_overlay, 16, 1, 1, 0, 0);
 		demoState->textInit = 1;
 		demoState->textMode = 1;
 		demoState->textModeCount = 3;	// 0=off, 1=controls, 2=data
-
 
 		// enable asset streaming between loads
 	//	demoState->streaming = 1;
@@ -228,11 +228,12 @@ A3DYLIBSYMBOL a3_DemoState *a3demoCB_load(a3_DemoState *demoState, a3boolean hot
 
 		// scene objects
 		a3demo_initScene(demoState);
-
-		// start physics simulation on a separate thread
-		a3physicsWorldThreadInit(demoState->physicsWorld);
-		a3textInitialize(demoState->text_overlay, 16, 1, 1, 0, 0);
 	}
+
+
+	// start physics simulation on a separate thread
+	a3physicsWorldThreadInit(demoState->physicsWorld);
+	demoState->updateAnimation = 1;
 
 
 /*
@@ -250,7 +251,9 @@ A3DYLIBSYMBOL a3_DemoState *a3demoCB_unload(a3_DemoState *demoState, a3boolean h
 {
 	// release things that need releasing always, whether hotbuilding or not
 	// e.g. kill thread
-	// nothing in this example, but then...
+
+	// terminate physics simulation thread
+	a3physicsWorldThreadTerm(demoState->physicsWorld);
 
 	// release persistent state if not hotbuilding
 	// good idea to release in reverse order that things were loaded...
@@ -259,12 +262,9 @@ A3DYLIBSYMBOL a3_DemoState *a3demoCB_unload(a3_DemoState *demoState, a3boolean h
 	//	no need to reverse!
 	if (!hotbuild)
 	{
-		// terminate physics simulation thread
-		a3physicsWorldThreadTerm(demoState->physicsWorld);
-		a3textRelease(demoState->text_overlay);
-
 		// free fixed objects
 		a3textRelease(demoState->text);
+		a3textRelease(demoState->text_overlay);
 
 		// free graphics objects
 		a3demo_unloadGeometry(demoState);
