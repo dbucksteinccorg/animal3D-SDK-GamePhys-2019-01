@@ -151,21 +151,39 @@ void a3demo_update(a3_DemoState *demoState, a3f64 dt)
 
 	// bridge physics with graphics: 
 	//	1) lock world
-	//	2) copy
+	//	2) read physics data
 	//	3) unlock world
 	//	4) update
+	//	5) lock world
+	//	6) write graphics data
+	//	7) unlock world
 	if (a3physicsWorldLock(demoState->physicsWorld) > 0)
 	{
 		a3_DemoSceneObject *currentObject;
-		const a3_PhysicsWorldState state_copy[1] = { *demoState->physicsWorld->pw_state };
+		a3_PhysicsWorldState state_copy[1] = { *demoState->physicsWorld->pw_state };
+		a3_GraphicsWorldState state_copy_g[1] = { *demoState->physicsWorld->pw_state_g };
 		a3physicsWorldUnlock(demoState->physicsWorld);
 
+		// read and update
 		for (i = 0, currentObject = demoState->sphereObject;
-			i < state_copy->count_particle;
+			i < state_copy->count_rigidbody;
 			++i, ++currentObject)
 		{
-			currentObject->position = state_copy->position_particle[i];
-			a3demo_updateSceneObject(currentObject, 0);
+			// copy position
+			currentObject->position = state_copy->position_rigidbody[i];
+
+			// convert rotation and position to transform
+			a3quatConvertToMat4Translate(currentObject->modelMat.m, state_copy->rotation_rigidbody[i].q, currentObject->position.v);
+
+			// copy transform
+			state_copy_g->transform_rigidbody[i] = currentObject->modelMat;
+		}
+
+		// write
+		if (a3physicsWorldLock(demoState->physicsWorld) > 0)
+		{
+			*demoState->physicsWorld->pw_state_g = *state_copy_g;
+			a3physicsWorldUnlock(demoState->physicsWorld);
 		}
 	}
 

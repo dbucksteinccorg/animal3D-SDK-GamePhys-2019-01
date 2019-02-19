@@ -16,37 +16,16 @@
 
 /*
 	animal3D SDK: Minimal 3D Animation Framework
-	animal3D Math (A3DM) SDK
 	By Daniel S. Buckstein
 	
-	animal3D-A3DM.h
-	Include all animal3D math (A3DM) SDK header files.
-
-	**DO NOT MODIFY THIS FILE**
+	a3_RigidBody.c
+	Implementation of rigid body.
 */
 
-
-#ifndef __ANIMAL3D_A3DM_H
-#define __ANIMAL3D_A3DM_H
-
-
-//-----------------------------------------------------------------------------
-// A3: Math includes.
-
-// utilities
-#include "animal3D-A3DM/a3math/a3interpolation.h"
-#include "animal3D-A3DM/a3math/a3stats.h"
-#include "animal3D-A3DM/a3math/a3random.h"
-#include "animal3D-A3DM/a3math/a3sqrt.h"
-#include "animal3D-A3DM/a3math/a3trig.h"
-
-// vector math
-#include "animal3D-A3DM/a3math/a3vector.h"
-#include "animal3D-A3DM/a3math/a3matrix.h"
-#include "animal3D-A3DM/a3math/a3quaternion.h"
+#include "a3_RigidBody.h"
 
 
 //-----------------------------------------------------------------------------
 
 
-#endif	// !__ANIMAL3D_A3DM_H
+//-----------------------------------------------------------------------------
