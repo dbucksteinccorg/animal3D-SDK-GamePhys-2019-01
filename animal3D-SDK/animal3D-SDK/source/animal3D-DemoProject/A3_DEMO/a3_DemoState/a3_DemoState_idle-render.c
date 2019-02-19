@@ -363,10 +363,10 @@ void a3demo_render(const a3_DemoState *demoState)
 	if (demoState->displayOverlay && a3textIsInitialized(demoState->text_overlay))
 	{
 		const a3byte *displayText[] = {
-			"springy",
-			"gravity",
-			"draggy",
-			"slippy",
+			"ship0",
+			"ship1",
+			"ship2",
+			"ship3",
 		};
 		const a3vec4 *colorPtr;
 		a3vec4 textPos;

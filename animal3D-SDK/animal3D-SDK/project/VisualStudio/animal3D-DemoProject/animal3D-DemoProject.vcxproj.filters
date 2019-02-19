@@ -93,10 +93,19 @@
     <ClCompile Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_Particle.c">
       <Filter>Source Files\common\A3_DEMO\_demo_physics</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_Integration.c">
+      <Filter>Source Files\common\A3_DEMO\_demo_physics</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_Force.c">
       <Filter>Source Files\common\A3_DEMO\_demo_physics</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_Integration.c">
+    <ClCompile Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_Collision.c">
+      <Filter>Source Files\common\A3_DEMO\_demo_physics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_Ray.c">
+      <Filter>Source Files\common\A3_DEMO\_demo_physics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_RigidBody.c">
       <Filter>Source Files\common\A3_DEMO\_demo_physics</Filter>
     </ClCompile>
   </ItemGroup>
@@ -119,10 +128,19 @@
     <ClInclude Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_Particle.h">
       <Filter>Header Files\A3_DEMO\_demo_physics</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_Integration.h">
+      <Filter>Header Files\A3_DEMO\_demo_physics</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_Force.h">
       <Filter>Header Files\A3_DEMO\_demo_physics</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_Integration.h">
+    <ClInclude Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_Collision.h">
+      <Filter>Header Files\A3_DEMO\_demo_physics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_Ray.h">
+      <Filter>Header Files\A3_DEMO\_demo_physics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\animal3D-DemoProject\A3_DEMO\_demo_physics\a3_RigidBody.h">
       <Filter>Header Files\A3_DEMO\_demo_physics</Filter>
     </ClInclude>
   </ItemGroup>

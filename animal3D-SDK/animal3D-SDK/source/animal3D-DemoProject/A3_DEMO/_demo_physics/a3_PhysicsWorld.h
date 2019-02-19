@@ -34,7 +34,7 @@
 #include "animal3D/a3utility/a3_Thread.h"
 
 // physics includes
-#include "a3_Particle.h"
+#include "a3_RigidBody.h"
 
 
 //-----------------------------------------------------------------------------
@@ -43,8 +43,9 @@
 extern "C"
 {
 #else	// !__cplusplus
-	typedef struct a3_PhysicsWorldState	a3_PhysicsWorldState;
-	typedef struct a3_PhysicsWorld		a3_PhysicsWorld;
+	typedef struct a3_GraphicsWorldState	a3_GraphicsWorldState;
+	typedef struct a3_PhysicsWorldState		a3_PhysicsWorldState;
+	typedef struct a3_PhysicsWorld			a3_PhysicsWorld;
 #endif	// __cplusplus
 
 	
@@ -53,17 +54,30 @@ extern "C"
 	// counters
 	enum a3_PhysicsWorldMaxCount
 	{
-		physicsWorldMaxCount_particle = 16,
+		physicsWorldMaxCount_rigidbody = 4,
 	};
 
 
 //-----------------------------------------------------------------------------
 
+	// used to deliver and read stuff FROM graphics
+	//	-> graphics will WRITE transform
+	struct a3_GraphicsWorldState
+	{
+		// receive from graphics
+		a3mat4 transform_rigidbody[physicsWorldMaxCount_rigidbody];
+	};
+
 	// state of a physics world: things that can be used for graphics ONLY
+	//	-> graphics will READ position and rotation
 	struct a3_PhysicsWorldState
 	{
-		a3vec3 position_particle[physicsWorldMaxCount_particle];
-		a3ui32 count_particle;
+		// send to graphics
+		a3vec3 position_rigidbody[physicsWorldMaxCount_rigidbody];
+		a3quat rotation_rigidbody[physicsWorldMaxCount_rigidbody];
+
+		// active object counter
+		a3ui32 count_rigidbody;
 	};
 
 
@@ -74,6 +88,7 @@ extern "C"
 	{
 		// state to store all of the things that graphics will use
 		a3_PhysicsWorldState pw_state[1];
+		a3_GraphicsWorldState pw_state_g[1];
 
 		// dedicated timer
 		a3_Timer pw_timer[1];
@@ -88,15 +103,12 @@ extern "C"
 		a3boolean pw_init;
 
 
-		// particles
+		// rigid bodies
 		union {
-			a3_Particle particle[physicsWorldMaxCount_particle];
+			a3_RigidBody rb[physicsWorldMaxCount_rigidbody];
 			struct {
-				a3_Particle
-					testParticle_springy[1],
-					testParticle_gravity[1],
-					testParticle_draggy[1],
-					testParticle_slippy[1];
+				a3_RigidBody
+					testRB_ship[4];
 			};
 		};
 	};
@@ -107,8 +119,8 @@ extern "C"
 	// physics simulation step
 	a3ret a3physicsWorldUpdate(a3_PhysicsWorld *world, a3f64 dt);
 
-	// reset world state
-	a3ret a3physicsWorldStateReset(a3_PhysicsWorldState *worldState);
+	// reset world states
+	a3ret a3physicsWorldStateReset(a3_PhysicsWorld *world);
 
 	// threaded physics simulation
 	inline void a3physicsWorldThreadInit(a3_PhysicsWorld *world);

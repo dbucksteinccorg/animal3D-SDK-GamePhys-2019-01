@@ -46,12 +46,21 @@ extern "C"
 	// particle for motion
 	struct a3_Particle
 	{
+		// linear dynamics: 
 		a3vec3 position;
 		a3vec3 velocity;
 		a3vec3 acceleration;
-	
+		a3vec3 momentum;
+		a3vec3 force;
+		a3real mass, massInv;
+
+		// angular dynamics: 
 		// ****TO-DO: 
-		//	- add new members
+		//	- add angular dynamics vectors
+		//	- add local inertia tensor and inverse for convenience
+		//	- add world inertia tensor and inverse
+		//	- add local center of mass for convenience
+		//	- add world center of mass
 
 	};
 
@@ -91,6 +100,55 @@ extern "C"
 
 	// reset force
 	inline a3i32 a3particleResetForce(a3_Particle *p);
+
+	// check if particle is rotating
+	inline a3i32 a3particleIsRotating(const a3_Particle *p);
+
+	// apply force at other location
+	inline a3i32 a3particleApplyForceLocation(a3_Particle *p, const a3real3p f, const a3real3p location_world);
+
+	// convert torque to angular acceleration
+	inline a3i32 a3particleConvertTorque(a3_Particle *p);
+
+	// reset torque
+	inline a3i32 a3particleResetTorque(a3_Particle *p);
+
+
+//-----------------------------------------------------------------------------
+
+	// calculate inertia tensor for shapes
+	//	(set mass first!)
+	//	 note: body axes are 0, 1 and 2 for x, y and z respectively
+
+	//	solid sphere
+	inline a3i32 a3particleSetLocalInertiaTensorSphereSolid(a3_Particle *p, const a3real radius);
+	//	hollow sphere
+	inline a3i32 a3particleSetLocalInertiaTensorSphereHollow(a3_Particle *p, const a3real radius);
+	//	solid box
+	inline a3i32 a3particleSetLocalInertiaTensorBoxSolid(a3_Particle *p, const a3real width, const a3real height, const a3real depth);
+	//	hollow box
+	inline a3i32 a3particleSetLocalInertiaTensorBoxHollow(a3_Particle *p, const a3real width, const a3real height, const a3real depth);
+	//	solid cylinder
+	inline a3i32 a3particleSetLocalInertiaTensorCylinderSolid(a3_Particle *p, const a3real radius, const a3real height, const a3i32 bodyAxis);
+	//	solid cone about apex
+	inline a3i32 a3particleSetLocalInertiaTensorConeSolidApex(a3_Particle *p, const a3real radius, const a3real height, const a3i32 bodyAxis);
+	//	rod about end
+	inline a3i32 a3particleSetLocalInertiaTensorRodEnd(a3_Particle *p, const a3real length, const a3i32 bodyAxis);
+	//	rod about center
+	inline a3i32 a3particleSetLocalInertiaTensorRodCenter(a3_Particle *p, const a3real length, const a3i32 bodyAxis);
+
+	// calculate total mass and center of mass from a set of influences
+	inline a3i32 a3particleCalculateLocalCenterOfMass(a3_Particle *p, const a3real3 *influenceList, const a3real *massList, const a3ui32 count);
+
+	// calculate inertia tensor and inverse from a set of influences
+	//	(calculate center of mass first!)
+	inline a3i32 a3particleCalculateLocalInertiaTensor(a3_Particle *p, const a3real3 *influenceList, const a3real *massList, const a3ui32 count);
+
+	// update center of mass relative to world
+	inline a3i32 a3particleUpdateCenterOfMass(a3_Particle *p, const a3real4x4p transform);
+
+	// update inertia tensor relative to world
+	inline a3i32 a3particleUpdateInertiaTensor(a3_Particle *p, const a3real4x4p transform);
 
 
 //-----------------------------------------------------------------------------

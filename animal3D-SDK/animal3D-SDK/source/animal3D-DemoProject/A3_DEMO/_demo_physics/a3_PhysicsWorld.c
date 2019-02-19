@@ -40,33 +40,31 @@ void a3physicsInitialize_internal(a3_PhysicsWorld *world)
 
 
 	// reset all physics objects
-	for (i = 0; i < physicsWorldMaxCount_particle; ++i)
-		a3particleReset(world->particle + i);
+	for (i = 0; i < physicsWorldMaxCount_rigidbody; ++i)
+		a3particleReset(world->rb[i].motionController);
 
+
+	// ****TO-DO: 
 	// initial values: set positions, related functions and values
 	// entirely force-controlled particles do not need a full set 
 	//	of initial values (e.g. can start with zero velocity)
+	//	-> static masses
+	//	-> local centers of mass
+	//	-> local inertia tensors
+	world->testRB_ship[0].motionController->position.y = -a3realSix;
+	world->testRB_ship[1].motionController->position.y = -a3realTwo;
+	world->testRB_ship[2].motionController->position.y = +a3realTwo;
+	world->testRB_ship[3].motionController->position.y = +a3realSix;
 
-	world->testParticle_springy->position.x = +8.0f;
-	world->testParticle_springy->position.z = +6.0f;
-	a3particleSetMass(world->testParticle_springy, 1.0f);
-
-	world->testParticle_gravity->position.y = +8.0f;
-	world->testParticle_gravity->position.z = +6.0f;
-	a3particleSetMass(world->testParticle_gravity, 1.0f);
-
-	world->testParticle_draggy->position.x = -8.0f;
-	world->testParticle_draggy->position.z = +6.0f;
-	a3particleSetMass(world->testParticle_draggy, 1.0f);
-
-	world->testParticle_slippy->position.y = -8.0f;
-	world->testParticle_slippy->position.z = -1.0f;
-	a3particleSetMass(world->testParticle_slippy, 1.0f);
+	// match tensors to models
+	i = 1;
+	a3particleSetMass(world->testRB_ship[i].motionController, a3realFive);
+	a3particleSetLocalInertiaTensorCylinderSolid(world->testRB_ship[i].motionController, a3realOne, a3realFour, 0);
 
 
-	// reset state
-	a3physicsWorldStateReset(world->pw_state);
-	world->pw_state->count_particle = 4;
+	// reset states
+	a3physicsWorldStateReset(world);
+	world->pw_state->count_rigidbody = 4;
 
 
 	// done
@@ -146,6 +144,7 @@ a3ret a3physicsWorldUpdate(a3_PhysicsWorld *world, a3f64 dt)
 {
 	// copy of state to edit before committing writing to world
 	a3_PhysicsWorldState state_copy[1] = { *world->pw_state };
+	a3_GraphicsWorldState state_copy_g[1] = { *world->pw_state_g };
 
 	// generic counter
 	a3ui32 i;
@@ -164,24 +163,57 @@ a3ret a3physicsWorldUpdate(a3_PhysicsWorld *world, a3f64 dt)
 //	a3vec3 f_spring;
 //	a3vec3 f_damp_l;
 
-	// tmp particle helpers
-//	a3_Particle *currentParticle;
+	// tmp particle and rigidbody helpers
+	a3_RigidBody *currentRB;
 //	const a3vec3 springyAnchor = { 0.0f, 0.0f, 10.0f };
 //	const a3vec3 slippyForce = { 0.0f, 5.0f, 0.0f };
+
+	a3vec3 forceAmount, forceLocation;
+	a3mat4 tmpMat;
 
 
 	// ****TO-DO: 
 	// update physics objects 
-	//	- reset and apply forces
+	//	- reset and apply forces and torques
 	//	- integrate
-	//	- force conversion
+	//	- force and torque conversions
 	//	- additional tasks (e.g. clamp position)
 
+	// test cylinder
+	i = 1;
+	currentRB = world->testRB_ship + i;
+	a3particleResetForce(currentRB->motionController);
+	a3particleResetTorque(currentRB->motionController);
 
-	// update state
-	for (i = 0; i < state_copy->count_particle; ++i)
+	// calculate test force: touch a point on the cylinder
+	tmpMat = state_copy_g->transform_rigidbody[i];
+	forceAmount = tmpMat.v1.xyz;
+	forceLocation = tmpMat.v3.xyz;
+	a3real3Add(forceLocation.v, tmpMat.v0.v);
+	a3real3Sub(forceLocation.v, tmpMat.v1.v);
+	a3particleApplyForceLocation(currentRB->motionController, forceAmount.v, forceLocation.v);
+
+	for (i = 0, currentRB = world->rb;
+		i < state_copy->count_rigidbody;
+		++i, ++currentRB)
 	{
-		state_copy->position_particle[i] = world->particle[i].position;
+		a3particleIntegrateEulerKinematic(currentRB->motionController, dt_r);
+		a3particleConvertForce(currentRB->motionController);
+		a3particleConvertTorque(currentRB->motionController);
+		a3particleUpdateCenterOfMass(currentRB->motionController, state_copy_g->transform_rigidbody[i].m);
+		a3particleUpdateInertiaTensor(currentRB->motionController, state_copy_g->transform_rigidbody[i].m);
+	}
+
+//	if (world->testRB_ship->motionController->position.z < a3realZero)
+//		world->testRB_ship->motionController->position.z = a3realZero;
+
+
+	// ****TO-DO: finish
+	// update state
+	for (i = 0; i < state_copy->count_rigidbody; ++i)
+	{
+		state_copy->position_rigidbody[i] = world->rb[i].motionController->position;
+
 	}
 
 
@@ -201,17 +233,20 @@ a3ret a3physicsWorldUpdate(a3_PhysicsWorld *world, a3f64 dt)
 //-----------------------------------------------------------------------------
 
 // reset world state
-a3ret a3physicsWorldStateReset(a3_PhysicsWorldState *worldState)
+a3ret a3physicsWorldStateReset(a3_PhysicsWorld *world)
 {
 	// generic counter
 	a3ui32 i;
 
-	if (worldState)
+	if (world)
 	{
 		// reset all state data appropriately
-		for (i = 0; i < physicsWorldMaxCount_particle; ++i)
+		world->pw_state->count_rigidbody = 0;
+		for (i = 0; i < physicsWorldMaxCount_rigidbody; ++i)
 		{
-			worldState->position_particle[i] = a3zeroVec3;
+			world->pw_state->position_rigidbody[i] = a3zeroVec3;
+			world->pw_state->rotation_rigidbody[i] = a3identityQuat;
+			world->pw_state_g->transform_rigidbody[i] = a3identityMat4;
 		}
 		return i;
 	}

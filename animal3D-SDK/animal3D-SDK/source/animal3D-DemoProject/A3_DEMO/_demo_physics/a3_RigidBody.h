@@ -16,37 +16,52 @@
 
 /*
 	animal3D SDK: Minimal 3D Animation Framework
-	animal3D Math (A3DM) SDK
 	By Daniel S. Buckstein
 	
-	animal3D-A3DM.h
-	Include all animal3D math (A3DM) SDK header files.
-
-	**DO NOT MODIFY THIS FILE**
+	a3_RigidBody.h
+	Rigid body for physics simulation.
 */
 
+#ifndef __ANIMAL3D_RIGIDBODY_H
+#define __ANIMAL3D_RIGIDBODY_H
 
-#ifndef __ANIMAL3D_A3DM_H
-#define __ANIMAL3D_A3DM_H
 
-
-//-----------------------------------------------------------------------------
-// A3: Math includes.
-
-// utilities
-#include "animal3D-A3DM/a3math/a3interpolation.h"
-#include "animal3D-A3DM/a3math/a3stats.h"
-#include "animal3D-A3DM/a3math/a3random.h"
-#include "animal3D-A3DM/a3math/a3sqrt.h"
-#include "animal3D-A3DM/a3math/a3trig.h"
-
-// vector math
-#include "animal3D-A3DM/a3math/a3vector.h"
-#include "animal3D-A3DM/a3math/a3matrix.h"
-#include "animal3D-A3DM/a3math/a3quaternion.h"
+#include "a3_Particle.h"
 
 
 //-----------------------------------------------------------------------------
 
+#ifdef __cplusplus
+extern "C"
+{
+#else	// !__cplusplus
+	typedef struct a3_RigidBody		a3_RigidBody;
+#endif	// __cplusplus
 
-#endif	// !__ANIMAL3D_A3DM_H
+	
+//-----------------------------------------------------------------------------
+
+	// alternative name for particle (it does everything we need it to...)
+	typedef a3_Particle a3_RigidBodyMotionController;
+
+	// rb
+	struct a3_RigidBody
+	{
+		// particle is "component" attached to make it move
+		a3_RigidBodyMotionController motionController[1];
+	};
+
+
+//-----------------------------------------------------------------------------
+
+
+
+//-----------------------------------------------------------------------------
+
+
+#ifdef __cplusplus
+}
+#endif	// __cplusplus
+
+
+#endif	// !__ANIMAL3D_RIGIDBODY_H
