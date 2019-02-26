@@ -22,8 +22,8 @@
 	Collision detection and response algorithm implementations.
 */
 
-#include "a3_Collision.h"
 #include "a3_RigidBody.h"
+#include "a3_Collision.h"
 
 
 //-----------------------------------------------------------------------------

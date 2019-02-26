@@ -35,6 +35,7 @@
 
 // physics includes
 #include "a3_RigidBody.h"
+#include "a3_Collision.h"
 
 
 //-----------------------------------------------------------------------------
@@ -110,7 +111,25 @@ extern "C"
 				a3_RigidBody
 					testRB_ship[4];
 			};
+			struct {
+				a3_RigidBody
+					testRB_sphere[1],
+					testRB_cylinder[1],
+					testRB_torus[1],
+					testRB_teapot[1];
+			};
 		};
+
+
+		// descriptors for objects that can be hit by rays
+		a3mat4 tmpPlaneTransform;
+		a3real tmpPlaneWidth, tmpPlaneHeight;
+		a3real tmpSphereRadius;
+		a3real tmpCylinderRadius, tmpCylinderHeight;
+
+		// the ray and ray hit
+		a3_Ray tmpRay[1];
+		a3_RayHit tmpRayHit[1];
 	};
 
 
@@ -129,6 +148,9 @@ extern "C"
 	// mutex handling
 	inline a3ret a3physicsWorldLock(a3_PhysicsWorld *world);
 	inline a3ret a3physicsWorldUnlock(a3_PhysicsWorld *world);
+
+	// extra utilities
+	void a3physicsWorldRayTest(a3_PhysicsWorld *world);
 
 
 //-----------------------------------------------------------------------------
