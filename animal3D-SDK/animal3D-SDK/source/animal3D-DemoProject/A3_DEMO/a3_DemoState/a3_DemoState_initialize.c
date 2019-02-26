@@ -180,14 +180,14 @@ void a3demo_initScene(a3_DemoState *demoState)
 //	demoState->torusObject->position.x = -8.0f;
 	if (demoState->verticalAxis)
 	{
-		demoState->planeObject->position.y = -1.0f;
+		demoState->planeObject->position.y = -2.0f;
 	//	demoState->planeObject->position.y = -4.0f;
 	//	demoState->cylinderObject->position.z = -8.0f;
 	//	demoState->teapotObject->position.z = +8.0f;
 	}
 	else
 	{
-		demoState->planeObject->position.z = -1.0f;
+		demoState->planeObject->position.z = -2.0f;
 	//	demoState->planeObject->position.z = -4.0f;
 	//	demoState->cylinderObject->position.y = +8.0f;
 	//	demoState->teapotObject->position.y = -8.0f;

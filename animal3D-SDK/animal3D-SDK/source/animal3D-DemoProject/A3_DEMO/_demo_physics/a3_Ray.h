@@ -36,12 +36,85 @@
 extern "C"
 {
 #else	// !__cplusplus
-
+	typedef struct a3_Ray				a3_Ray;
+	typedef struct a3_RayHit			a3_RayHit;
+	typedef enum a3_Axis				a3_Axis;
 #endif	// __cplusplus
 
 	
 //-----------------------------------------------------------------------------
 
+	// ray descriptor
+	struct a3_Ray
+	{
+		a3vec4 origin;			// point of origin (w = 1)
+		a3vec4 direction;		// direction vector (w = 0)
+	};
+
+	// ray hit descriptor
+	struct a3_RayHit
+	{
+		a3vec4 hit0, hit1;		// near and far point of intersection
+		a3real param0, param1;	// relative scales along ray
+		a3boolean hitFlag;
+	};
+
+	// axis
+	enum a3_Axis
+	{
+		a3axis_x,	// index 0 in a matrix
+		a3axis_y,	// index 1 in a matrix
+		a3axis_z,	// index 2 in a matrix
+	};
+
+
+//-----------------------------------------------------------------------------
+
+	// create ray given start and end points
+	inline a3i32 a3rayCreateLine(a3_Ray *ray_out, const a3vec3 origin, const a3vec3 end);
+
+	// create ray given origin and direction (will be normalized)
+	inline a3i32 a3rayCreate(a3_Ray *ray_out, const a3vec3 origin, const a3vec3 direction);
+
+	// transform a ray
+	inline a3i32 a3rayTransform(a3_Ray *ray_out, const a3_Ray *ray, const a3real4x4p transform);
+
+	// create ray given NDC coordinate and an inverse projection matrix
+	inline a3i32 a3rayCreateUnprojected(a3_Ray *ray_out, const a3vec3 v_ndc, const a3real4x4p invProj);
+
+	// reset ray hit to ray origin
+	inline a3i32 a3rayHitReset(a3_RayHit *hit_out, const a3_Ray *ray);
+
+	// validate hit: lower flag if near distance is negative
+	inline a3i32 a3rayHitValidate(a3_RayHit *hit);
+
+
+//-----------------------------------------------------------------------------
+
+	// pick against infinite plane
+	inline a3i32 a3rayTestPlane(a3_RayHit *hit_out, const a3_Ray *ray, const a3_Axis normalAxis, const a3real4x4p transform);
+
+	// pick against finite plane
+	inline a3i32 a3rayTestPlaneFinite(a3_RayHit *hit_out, const a3_Ray *ray, const a3_Axis normalAxis, const a3real width, const a3real height, const a3real4x4p transform);
+
+	// pick against disc
+	inline a3i32 a3rayTestDisc(a3_RayHit *hit_out, const a3_Ray *ray, const a3_Axis normalAxis, const a3real radius, const a3real4x4p transform);
+
+	// pick against sphere
+	inline a3i32 a3rayTestSphere(a3_RayHit *hit_out, const a3_Ray *ray, const a3real radius, const a3real4x4p transform);
+
+	// pick against infinite cylinder
+	inline a3i32 a3rayTestCylinder(a3_RayHit *hit_out, const a3_Ray *ray, const a3_Axis normalAxis, const a3real radius, const a3real4x4p transform);
+
+	// pick against finite cylinder
+	inline a3i32 a3rayTestCylinderFinite(a3_RayHit *hit_out, const a3_Ray *ray, const a3_Axis normalAxis, const a3real radius, const a3real length, const a3real4x4p transform);
+
+	// pick against axis-aligned box
+	inline a3i32 a3rayTestAxisAlignedBox(a3_RayHit *hit_out, const a3_Ray *ray, const a3real width, const a3real height, const a3real depth, const a3real4x4p transform);
+
+	// pick against bounding box
+	inline a3i32 a3rayTestBoundingBox(a3_RayHit *hit_out, const a3_Ray *ray, const a3real width, const a3real height, const a3real depth, const a3real4x4p transform, const a3real4x4p transformInv);
+	
 
 //-----------------------------------------------------------------------------
 

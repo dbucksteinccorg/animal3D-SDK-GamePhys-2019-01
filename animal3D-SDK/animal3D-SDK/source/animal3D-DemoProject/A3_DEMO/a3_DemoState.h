@@ -107,6 +107,8 @@ extern "C"
 		// window and full-frame dimensions
 		a3ui32 windowWidth, windowHeight;
 		a3ui32 frameWidth, frameHeight;
+		a3real windowWidthInv, windowHeightInv;
+		a3real frameWidthInv, frameHeightInv;
 		a3i32 frameBorder;
 
 
