@@ -311,6 +311,48 @@ void a3demo_render(const a3_DemoState *demoState)
 	}
 
 
+	// draw ray and hits
+	{
+		const a3_Ray tmpRay[1] = { *demoState->physicsWorld->tmpRay };
+		const a3_RayHit tmpRayHit[1] = { *demoState->physicsWorld->tmpRayHit };
+
+		a3mat4 rayMat = a3identityMat4;
+		rayMat.v3 = tmpRay->origin;
+		rayMat.v2 = tmpRay->direction;
+		a3real3MulS(rayMat.v2.v, a3realOneHundred);
+		rayMat.m00 = rayMat.m11 = a3realZero;
+
+		currentDemoProgram = demoState->prog_drawColorUnif;
+		a3shaderProgramActivate(currentDemoProgram->program);
+		a3real4x4Product(modelViewProjectionMat.m, camera->viewProjectionMat.m, rayMat.m);
+		a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMVP, 1, modelViewProjectionMat.mm);
+		a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor, 1, orange);
+
+		currentDrawable = demoState->draw_axes;
+		a3vertexDrawableActivateAndRender(currentDrawable);
+
+		// draw hits
+		if (tmpRayHit->hitFlag)
+		{
+			currentDrawable = demoState->draw_sphere;
+			a3vertexDrawableActivate(currentDrawable);
+
+			a3real4x4SetScale(rayMat.m, 0.1f);
+			a3shaderUniformSendFloat(a3unif_vec4, currentDemoProgram->uColor, 1, skyblue);
+
+			rayMat.v3 = tmpRayHit->hit0;
+			a3real4x4Product(modelViewProjectionMat.m, camera->viewProjectionMat.m, rayMat.m);
+			a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMVP, 1, modelViewProjectionMat.mm);
+			a3vertexDrawableRenderActive();
+
+			rayMat.v3 = tmpRayHit->hit1;
+			a3real4x4Product(modelViewProjectionMat.m, camera->viewProjectionMat.m, rayMat.m);
+			a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMVP, 1, modelViewProjectionMat.mm);
+			a3vertexDrawableRenderActive();
+		}
+	}
+
+
 	//-------------------------------------------------------------------------
 	// 2) OVERLAYS: done after FSQ so they appear over everything else
 	//	- disable depth testing

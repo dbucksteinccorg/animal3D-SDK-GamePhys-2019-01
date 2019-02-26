@@ -55,13 +55,15 @@ extern "C"
 		a3real mass, massInv;
 
 		// angular dynamics: 
-		// ****TO-DO: 
-		//	- add angular dynamics vectors
-		//	- add local inertia tensor and inverse for convenience
-		//	- add world inertia tensor and inverse
-		//	- add local center of mass for convenience
-		//	- add world center of mass
-
+		a3quat rotation;
+		a3vec3 angularVelocity;
+		a3vec3 angularAcceleration;
+		a3vec3 angularMomentum;
+		a3vec3 torque;
+		a3mat3 inertiaTensor, inertiaTensorInv;
+		a3mat3 inertiaTensor_world, inertiaTensorInv_world;
+		a3vec3 centerMass;
+		a3vec3 centerMass_world;
 	};
 
 
