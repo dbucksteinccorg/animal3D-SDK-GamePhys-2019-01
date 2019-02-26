@@ -362,11 +362,15 @@ A3DYLIBSYMBOL void a3demoCB_windowResize(a3_DemoState *demoState, a3i32 newWindo
 	const a3real aspect = (a3real)frameWidth / (a3real)frameHeight;
 
 	// copy new values to demo state
-	demoState->frameBorder = frameBorder;
 	demoState->windowWidth = newWindowWidth;
 	demoState->windowHeight = newWindowHeight;
 	demoState->frameWidth = frameWidth;
 	demoState->frameHeight = frameHeight;
+	demoState->windowWidthInv = a3recip((a3real)newWindowWidth);
+	demoState->windowHeightInv = a3recip((a3real)newWindowHeight);
+	demoState->frameWidthInv = a3recip((a3real)frameWidth);
+	demoState->frameHeightInv = a3recip((a3real)frameHeight);
+	demoState->frameBorder = frameBorder;
 
 	// use framebuffer deactivate utility to set viewport
 	a3framebufferDeactivateSetViewport(a3fbo_depthDisable, -frameBorder, -frameBorder, demoState->frameWidth, demoState->frameHeight);
@@ -537,6 +541,30 @@ A3DYLIBSYMBOL void a3demoCB_mouseClick(a3_DemoState *demoState, a3i32 button, a3
 	// persistent state update
 	a3mouseSetState(demoState->mouse, (a3_MouseButton)button, a3input_down);
 	a3mouseSetPosition(demoState->mouse, cursorX, cursorY);
+
+//	if (demoState->demoMode == 0)
+	{
+		if (button == a3mouse_right)
+		{
+			a3vec3 pos = {
+				+((a3real)(cursorX + demoState->frameBorder) * demoState->frameWidthInv * a3realTwo - a3realOne),
+				-((a3real)(cursorY + demoState->frameBorder) * demoState->frameHeightInv * a3realTwo - a3realOne),
+				-a3realOne
+			};
+
+			// create and transform to match camera
+			a3_Ray tmpRay[1];
+			a3rayCreateUnprojected(tmpRay, pos, demoState->sceneCamera->projectionMatInv.m);
+
+			// send ray to world
+			if (a3physicsWorldLock(demoState->physicsWorld))
+			{
+				a3rayTransform(demoState->physicsWorld->tmpRay, tmpRay, demoState->mainCamera->modelMat.m);
+				a3physicsWorldRayTest(demoState->physicsWorld);
+				a3physicsWorldUnlock(demoState->physicsWorld);
+			}
+		}
+	}
 }
 
 // mouse button is double-clicked

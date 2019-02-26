@@ -51,10 +51,10 @@ void a3physicsInitialize_internal(a3_PhysicsWorld *world)
 	//	-> static masses
 	//	-> local centers of mass
 	//	-> local inertia tensors
-	world->testRB_ship[0].motionController->position.y = -a3realSix;
-	world->testRB_ship[1].motionController->position.y = -a3realTwo;
-	world->testRB_ship[2].motionController->position.y = +a3realTwo;
-	world->testRB_ship[3].motionController->position.y = +a3realSix;
+	world->testRB_sphere->motionController->position.y = -a3realSix;
+	world->testRB_cylinder->motionController->position.y = -a3realTwo;
+	world->testRB_torus->motionController->position.y = +a3realTwo;
+	world->testRB_teapot->motionController->position.y = +a3realSix;
 
 	// match tensors to models
 	i = 1;
@@ -65,6 +65,19 @@ void a3physicsInitialize_internal(a3_PhysicsWorld *world)
 	// reset states
 	a3physicsWorldStateReset(world);
 	world->pw_state->count_rigidbody = 4;
+
+
+	// ray test
+	{
+		// copy data from renderer for now
+		// wouldn't it be nice if they could share???
+		world->tmpPlaneTransform = a3identityMat4;
+		world->tmpPlaneTransform.m32 = -2.0f;
+		world->tmpPlaneWidth = world->tmpPlaneHeight = 24.0f;
+		world->tmpSphereRadius = 1.0f;
+		world->tmpCylinderRadius = 1.0f;
+		world->tmpCylinderHeight = 4.0f;
+	}
 
 
 	// done
@@ -208,12 +221,11 @@ a3ret a3physicsWorldUpdate(a3_PhysicsWorld *world, a3f64 dt)
 //		world->testRB_ship->motionController->position.z = a3realZero;
 
 
-	// ****TO-DO: finish
 	// update state
 	for (i = 0; i < state_copy->count_rigidbody; ++i)
 	{
 		state_copy->position_rigidbody[i] = world->rb[i].motionController->position;
-
+		state_copy->rotation_rigidbody[i] = world->rb[i].motionController->rotation;
 	}
 
 
@@ -224,6 +236,11 @@ a3ret a3physicsWorldUpdate(a3_PhysicsWorld *world, a3f64 dt)
 		*world->pw_state = *state_copy;
 		a3physicsWorldUnlock(world);
 	}
+
+
+	// ray test
+	a3physicsWorldRayTest(world);
+
 
 	// done
 	return 0;
@@ -318,6 +335,36 @@ extern inline a3ret a3physicsWorldUnlock(a3_PhysicsWorld *world)
 		return ret;
 	}
 	return -1;
+}
+
+
+//-----------------------------------------------------------------------------
+
+// ray test
+void a3physicsWorldRayTest(a3_PhysicsWorld *world)
+{
+	a3_RayHit tmpRayHit[1];
+	a3rayHitReset(world->tmpRayHit, world->tmpRay);
+	world->tmpRayHit->param0 = a3realOneHundred;
+
+	// test against each object
+	if (a3rayTestPlaneFinite(tmpRayHit, world->tmpRay, a3axis_z,
+		world->tmpPlaneWidth, world->tmpPlaneHeight, world->tmpPlaneTransform.m) &&
+		a3rayHitValidate(tmpRayHit) &&
+		tmpRayHit->param0 <= world->tmpRayHit->param0)
+		*world->tmpRayHit = *tmpRayHit;
+
+	if (a3rayTestSphere(tmpRayHit, world->tmpRay,
+		world->tmpSphereRadius, world->pw_state_g->transform_rigidbody[0].m) &&
+		a3rayHitValidate(tmpRayHit) &&
+		tmpRayHit->param0 <= world->tmpRayHit->param0)
+		*world->tmpRayHit = *tmpRayHit;
+
+	if (a3rayTestCylinderFinite(tmpRayHit, world->tmpRay, a3axis_x,
+		world->tmpCylinderRadius, world->tmpCylinderHeight, world->pw_state_g->transform_rigidbody[1].m) &&
+		a3rayHitValidate(tmpRayHit) &&
+		tmpRayHit->param0 <= world->tmpRayHit->param0)
+		*world->tmpRayHit = *tmpRayHit;
 }
 
 
