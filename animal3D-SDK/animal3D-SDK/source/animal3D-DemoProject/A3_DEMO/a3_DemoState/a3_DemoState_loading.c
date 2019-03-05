@@ -76,10 +76,10 @@
 void a3demo_loadGeometry(a3_DemoState *demoState)
 {
 	// static model transformations
-	static const a3mat4 downscale20x = {
-		+0.05f, 0.0f, 0.0f, 0.0f,
-		0.0f, +0.05f, 0.0f, 0.0f,
-		0.0f, 0.0f, +0.05f, 0.0f,
+	static const a3mat4 downscale50x = {
+		+0.02f, 0.0f, 0.0f, 0.0f,
+		0.0f, +0.02f, 0.0f, 0.0f,
+		0.0f, 0.0f, +0.02f, 0.0f,
 		0.0f, 0.0f, 0.0f, +1.0f,
 	};
 
@@ -98,7 +98,7 @@ void a3demo_loadGeometry(a3_DemoState *demoState)
 
 	// geometry data
 	a3_GeometryData sceneShapesData[3] = { 0 };
-	a3_GeometryData proceduralShapesData[4] = { 0 };
+	a3_GeometryData proceduralShapesData[5] = { 0 };
 	a3_GeometryData loadedModelsData[1] = { 0 };
 	const a3ui32 sceneShapesCount = sizeof(sceneShapesData) / sizeof(a3_GeometryData);
 	const a3ui32 proceduralShapesCount = sizeof(proceduralShapesData) / sizeof(a3_GeometryData);
@@ -135,7 +135,7 @@ void a3demo_loadGeometry(a3_DemoState *demoState)
 	{
 		// create new data
 		a3_ProceduralGeometryDescriptor sceneShapes[3] = { a3geomShape_none };
-		a3_ProceduralGeometryDescriptor proceduralShapes[4] = { a3geomShape_none };
+		a3_ProceduralGeometryDescriptor proceduralShapes[5] = { a3geomShape_none };
 		const a3byte *loadedShapesFile[1] = {
 			"../../../../resource/obj/teapot/teapot.obj",
 		};
@@ -143,7 +143,7 @@ void a3demo_loadGeometry(a3_DemoState *demoState)
 			a3model_calculateVertexNormals_loadTexcoords,
 		};
 		const a3real *loadedShapesTransform[1] = {
-			downscale20x.mm,
+			downscale50x.mm,
 		};
 
 		// static scene procedural objects
@@ -158,10 +158,11 @@ void a3demo_loadGeometry(a3_DemoState *demoState)
 		}
 
 		// other procedurally-generated objects
-		a3proceduralCreateDescriptorPlane(proceduralShapes + 0, a3geomFlag_texcoords_normals, a3geomAxis_default, 24.0f, 24.0f, 12, 12);
+		a3proceduralCreateDescriptorPlane(proceduralShapes + 0, a3geomFlag_texcoords_normals, a3geomAxis_default, 1.0f, 1.0f, 1, 1);
 		a3proceduralCreateDescriptorSphere(proceduralShapes + 1, a3geomFlag_texcoords_normals, a3geomAxis_default, 1.0f, 32, 24);
-		a3proceduralCreateDescriptorCylinder(proceduralShapes + 2, a3geomFlag_texcoords_normals, a3geomAxis_x, 1.0f, 2.0f, 32, 1, 1);
-		a3proceduralCreateDescriptorTorus(proceduralShapes + 3, a3geomFlag_texcoords_normals, a3geomAxis_x, 1.0f, 0.25f, 32, 24);
+		a3proceduralCreateDescriptorBox(proceduralShapes + 2, a3geomFlag_texcoords_normals, 1.0f, 1.0f, 1.0f, 1, 1, 1);
+		a3proceduralCreateDescriptorCylinder(proceduralShapes + 3, a3geomFlag_texcoords_normals, a3geomAxis_x, 1.0f, 1.0f, 32, 1, 1);
+		a3proceduralCreateDescriptorTorus(proceduralShapes + 4, a3geomFlag_texcoords_normals, a3geomAxis_x, 1.0f, 0.25f, 32, 24);
 		for (i = 0; i < proceduralShapesCount; ++i)
 		{
 			a3proceduralGenerateGeometryData(proceduralShapesData + i, proceduralShapes + i, 0);
@@ -249,10 +250,12 @@ void a3demo_loadGeometry(a3_DemoState *demoState)
 	sharedVertexStorage += a3geometryGenerateDrawable(currentDrawable, proceduralShapesData + 0, vao, vbo_ibo, sceneCommonIndexFormat, 0, 0);
 	currentDrawable = demoState->draw_sphere;
 	sharedVertexStorage += a3geometryGenerateDrawable(currentDrawable, proceduralShapesData + 1, vao, vbo_ibo, sceneCommonIndexFormat, 0, 0);
-	currentDrawable = demoState->draw_cylinder;
+	currentDrawable = demoState->draw_box;
 	sharedVertexStorage += a3geometryGenerateDrawable(currentDrawable, proceduralShapesData + 2, vao, vbo_ibo, sceneCommonIndexFormat, 0, 0);
-	currentDrawable = demoState->draw_torus;
+	currentDrawable = demoState->draw_cylinder;
 	sharedVertexStorage += a3geometryGenerateDrawable(currentDrawable, proceduralShapesData + 3, vao, vbo_ibo, sceneCommonIndexFormat, 0, 0);
+	currentDrawable = demoState->draw_torus;
+	sharedVertexStorage += a3geometryGenerateDrawable(currentDrawable, proceduralShapesData + 4, vao, vbo_ibo, sceneCommonIndexFormat, 0, 0);
 	currentDrawable = demoState->draw_teapot;
 	sharedVertexStorage += a3geometryGenerateDrawable(currentDrawable, loadedModelsData + 0, vao, vbo_ibo, sceneCommonIndexFormat, 0, 0);
 

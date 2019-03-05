@@ -118,7 +118,7 @@ inline a3i32 a3rayTestSphere_internal(a3_RayHit *hit_out, const a3real4p rayOrig
 
 // ****TO-DO: 
 // infinite cylinder
-inline a3i32 a3rayTestCylinder_internal(a3_RayHit *hit_out, const a3real4p rayOrigin, const a3real4p rayDirection, const a3real3p cylinderCenter, const a3real3p cylinderAxis, const a3real cylinderRadiusSq, const a3real cylinderAxisLengthInvSq, a3real3p diff_tmp)
+inline a3i32 a3rayTestCylinder_internal(a3_RayHit *hit_out, const a3real4p rayOrigin, const a3real4p rayDirection, const a3real3p cylinderCenter, const a3real3p cylinderAxis, const a3real cylinderRadiusSq, a3real3p diff_tmp)
 {
 	// ray vs infinite cylinder test: 
 	// resource: https://www.cl.cam.ac.uk/teaching/1999/AGraphHCI/SMAG/node2.html
@@ -167,9 +167,9 @@ inline a3i32 a3rayTestCylinder_internal(a3_RayHit *hit_out, const a3real4p rayOr
 
 // ****TO-DO: 
 // finite cylinder
-inline a3i32 a3rayTestCylinderFinite_internal(a3_RayHit *hit_out, const a3real4p rayOrigin, const a3real4p rayDirection, const a3real3p cylinderCenter, const a3real3p cylinderAxis, const a3real cylinderRadiusSq, const a3real cylinderAxisLengthInvSq, const a3real cylinderLength, a3real3p diff_tmp)
+inline a3i32 a3rayTestCylinderFinite_internal(a3_RayHit *hit_out, const a3real4p rayOrigin, const a3real4p rayDirection, const a3real3p cylinderCenter, const a3real3p cylinderAxis, const a3real cylinderRadiusSq, const a3real cylinderHalfLength, a3real3p diff_tmp)
 {
-	if (a3rayTestCylinder_internal(hit_out, rayOrigin, rayDirection, cylinderCenter, cylinderAxis, cylinderRadiusSq, cylinderAxisLengthInvSq, diff_tmp))
+	if (a3rayTestCylinder_internal(hit_out, rayOrigin, rayDirection, cylinderCenter, cylinderAxis, cylinderRadiusSq, diff_tmp))
 	{
 
 	}
@@ -295,170 +295,113 @@ extern inline a3i32 a3rayHitValidate(a3_RayHit *hit)
 
 //-----------------------------------------------------------------------------
 
-// pick against infinite plane
-extern inline a3i32 a3rayTestPlane(a3_RayHit *hit_out, const a3_Ray *ray, const a3_Axis normalAxis, const a3real4x4p transform)
+// pick against convex hull
+extern inline a3i32 a3rayTestConvexHull(a3_RayHit *hit_out, const a3_Ray *ray, const a3_ConvexHull *hull)
 {
-	if (hit_out && ray)
+	// tmp basis vectors from transform
+	const a3real *tangent = hull->transform->m[(hull->normalAxis + 1) % 3];
+	const a3real *bitangent = hull->transform->m[(hull->normalAxis + 2) % 3];
+	const a3real *normal = hull->transform->m[hull->normalAxis];
+	const a3real *center = hull->transform->m[3];
+
+	// tmp storage vector
+	a3real3 diff_tmp;
+
+	// tmp ray copy
+	a3_Ray rayCopy_tmp[1];
+
+	// reset
+	a3rayHitReset_internal(hit_out, ray);
+
+	// select test based on hull type
+	switch (hull->type)
 	{
-		const a3real *normal = transform[normalAxis];
-		const a3real *center = transform[3];
-		a3real3 diff_tmp;
-
-		a3rayHitReset_internal(hit_out, ray);
-		hit_out->hitFlag = a3rayTestPlane_internal(hit_out, ray->origin.v, ray->direction.v, center, normal, diff_tmp);
-		return hit_out->hitFlag;
-	}
-	return 0;
-}
-
-// pick against finite plane
-extern inline a3i32 a3rayTestPlaneFinite(a3_RayHit *hit_out, const a3_Ray *ray, const a3_Axis normalAxis, const a3real width, const a3real height, const a3real4x4p transform)
-{
-	if (hit_out && ray)
-	{
-		const a3real *normal = transform[normalAxis];
-		const a3real *center = transform[3];
-		a3real3 diff_tmp;
-
-		a3rayHitReset_internal(hit_out, ray);
-		if (width > a3realZero && height > a3realZero)
+	case a3hullType_plane:
+		if (hull->flag & a3hullFlag_isAxisAligned)
 		{
-			const a3real *tangent = transform[(normalAxis + 1) % 3];
-			const a3real *bitangent = transform[(normalAxis + 2) % 3];
-			const a3real halfWidthSq = (width * width) * a3realQuarter;
-			const a3real halfWeightSq = (height * height) * a3realQuarter;
-			hit_out->hitFlag = a3rayTestPlaneFinite_internal(hit_out, ray->origin.v, ray->direction.v, center, tangent, bitangent, normal, halfWidthSq, halfWeightSq, diff_tmp);
+			// choose correct test
+			if (hull->width > a3realZero && hull->height > a3realZero)
+				hit_out->hitFlag = a3rayTestPlaneFinite_internal(hit_out, ray->origin.v, ray->direction.v, center, tangent, bitangent, normal, hull->halfWidthSq, hull->halfHeightSq, diff_tmp);
+			else
+				hit_out->hitFlag = a3rayTestPlane_internal(hit_out, ray->origin.v, ray->direction.v, center, normal, diff_tmp);
 		}
 		else
 		{
-			hit_out->hitFlag = a3rayTestPlane_internal(hit_out, ray->origin.v, ray->direction.v, center, normal, diff_tmp);
+			// transform ray into plane's local space because 
+			//	relative to itself the plane is axis-aligned
+			a3rayTransform(rayCopy_tmp, ray, hull->transformInv->m);
+
+			// choose correct test
+			if (hull->width > a3realZero && hull->height > a3realZero)
+				hit_out->hitFlag = a3rayTestPlaneFinite_internal(hit_out, rayCopy_tmp->origin.v, rayCopy_tmp->direction.v, center, tangent, bitangent, normal, hull->halfWidthSq, hull->halfHeightSq, diff_tmp);
+			else
+				hit_out->hitFlag = a3rayTestPlane_internal(hit_out, rayCopy_tmp->origin.v, rayCopy_tmp->direction.v, center, normal, diff_tmp);
+
+			// set hit point in original space
+			if (hit_out->hitFlag)
+			{
+				a3real3ProductS(hit_out->hit0.v, ray->direction.v, hit_out->param0);
+				a3real3Add(hit_out->hit0.v, ray->origin.v);
+			}
 		}
-		return hit_out->hitFlag;
-	}
-	return 0;
-}
+		break;
 
-// pick against disc
-extern inline a3i32 a3rayTestDisc(a3_RayHit *hit_out, const a3_Ray *ray, const a3_Axis normalAxis, const a3real radius, const a3real4x4p transform)
-{
-	if (hit_out && ray)
-	{
-		const a3real *normal = transform[normalAxis];
-		const a3real *center = transform[3];
-		const a3real radiusSq = radius * radius;
-		a3real3 diff_tmp;
-
-		a3rayHitReset_internal(hit_out, ray);
-		hit_out->hitFlag = a3rayTestDisc_internal(hit_out, ray->origin.v, ray->direction.v, center, normal, radiusSq, diff_tmp);
-		return hit_out->hitFlag;
-	}
-	return 0;
-}
-
-// pick against sphere
-extern inline a3i32 a3rayTestSphere(a3_RayHit *hit_out, const a3_Ray *ray, const a3real radius, const a3real4x4p transform)
-{
-	if (hit_out && ray)
-	{
-		const a3real *center = transform[3];
-		const a3real radiusSq = radius * radius;
-		a3real3 diff_tmp;
-
-		a3rayHitReset_internal(hit_out, ray);
-		hit_out->hitFlag = a3rayTestSphere_internal(hit_out, ray->origin.v, ray->direction.v, center, radiusSq, diff_tmp);
-		return hit_out->hitFlag;
-	}
-	return 0;
-}
-
-// pick against infinite cylinder
-extern inline a3i32 a3rayTestCylinder(a3_RayHit *hit_out, const a3_Ray *ray, const a3_Axis normalAxis, const a3real radius, const a3real4x4p transform)
-{
-	if (hit_out && ray)
-	{
-		const a3real *bodyDirection = transform[normalAxis];
-		const a3real *center = transform[3];
-		const a3real radiusSq = radius * radius;
-		const a3real bodyLenInvSq = a3real3LengthSquaredInverse(bodyDirection);
-		a3real3 diff_tmp;
-
-		a3rayHitReset_internal(hit_out, ray);
-		hit_out->hitFlag = a3rayTestCylinder_internal(hit_out, ray->origin.v, ray->direction.v, center, bodyDirection, radiusSq, bodyLenInvSq, diff_tmp);
-		return hit_out->hitFlag;
-	}
-	return 0;
-}
-
-// pick against finite cylinder
-extern inline a3i32 a3rayTestCylinderFinite(a3_RayHit *hit_out, const a3_Ray *ray, const a3_Axis normalAxis, const a3real radius, const a3real length, const a3real4x4p transform)
-{
-	if (hit_out && ray)
-	{
-		const a3real *bodyDirection = transform[normalAxis];
-		const a3real *center = transform[3];
-		const a3real radiusSq = radius * radius;
-		const a3real bodyLenInvSq = a3real3LengthSquaredInverse(bodyDirection);
-		a3real3 diff_tmp;
-
-		a3rayHitReset_internal(hit_out, ray);
-		if (length > a3realZero)
-		{
-			hit_out->hitFlag = a3rayTestCylinderFinite_internal(hit_out, ray->origin.v, ray->direction.v, center, bodyDirection, radiusSq, bodyLenInvSq, length, diff_tmp);
-		}
+	case a3hullType_disc:
+		// axis-aligned test
+		if (hull->flag & a3hullFlag_isAxisAligned)
+			hit_out->hitFlag = a3rayTestDisc_internal(hit_out, ray->origin.v, ray->direction.v, center, normal, hull->radiusSq, diff_tmp);
 		else
 		{
-			hit_out->hitFlag = a3rayTestCylinder_internal(hit_out, ray->origin.v, ray->direction.v, center, bodyDirection, radiusSq, bodyLenInvSq, diff_tmp);
+			// transform ray into disc's local space because 
+			//	relative to itself the disc is axis-aligned
+			a3rayTransform(rayCopy_tmp, ray, hull->transformInv->m);
+			hit_out->hitFlag = a3rayTestDisc_internal(hit_out, rayCopy_tmp->origin.v, rayCopy_tmp->direction.v, center, normal, hull->radiusSq, diff_tmp);
+			
+			// set hit point in original space
+			if (hit_out->hitFlag)
+			{
+				a3real3ProductS(hit_out->hit0.v, ray->direction.v, hit_out->param0);
+				a3real3Add(hit_out->hit0.v, ray->origin.v);
+			}
 		}
-		return hit_out->hitFlag;
-	}
-	return 0;
-}
+		break;
 
-// pick against axis-aligned box
-extern inline a3i32 a3rayTestAxisAlignedBox(a3_RayHit *hit_out, const a3_Ray *ray, const a3real width, const a3real height, const a3real depth, const a3real4x4p transform)
-{
-	if (hit_out && ray)
-	{
-		// half dimensions
-		const a3real halfWidth = a3realHalf * width;
-		const a3real halfHeight = a3realHalf * height;
-		const a3real halfDepth = a3realHalf * depth;
-
-		// perform AABB test
-		const a3real *center = transform[3];
-		a3rayHitReset_internal(hit_out, ray);
-		hit_out->hitFlag = a3rayTestAABB_internal(hit_out, ray->origin.v, ray->direction.v, center[0] - halfWidth, center[1] - halfHeight, center[2] - halfDepth, center[0] + halfWidth, center[1] + halfHeight, center[2] + halfDepth);
-		return hit_out->hitFlag;
-	}
-	return 0;
-}
-
-// pick against bounding box
-extern inline a3i32 a3rayTestBoundingBox(a3_RayHit *hit_out, const a3_Ray *ray, const a3real width, const a3real height, const a3real depth, const a3real4x4p transform, const a3real4x4p transformInv)
-{
-	if (hit_out && ray)
-	{
-		// half dimensions
-		const a3real halfWidth = a3realHalf * width;
-		const a3real halfHeight = a3realHalf * height;
-		const a3real halfDepth = a3realHalf * depth;
-
-		// move to local space and do test
-		a3_Ray rayLocal[1];
-		a3rayTransform(rayLocal, ray, transformInv);
-		a3rayHitReset_internal(hit_out, ray);
-		hit_out->hitFlag = a3rayTestAABB_internal(hit_out, rayLocal->origin.v, rayLocal->direction.v, -halfWidth, -halfHeight, -halfDepth, +halfWidth, +halfHeight, +halfDepth);
-		if (hit_out->hitFlag)
+	case a3hullType_box:
+		// axis-aligned test
+		if (hull->flag & a3hullFlag_isAxisAligned)
+			hit_out->hitFlag = a3rayTestAABB_internal(hit_out, ray->origin.v, ray->direction.v, center[0] - hull->halfWidth, center[1] - hull->halfHeight, center[2] - hull->halfDepth, center[0] + hull->halfWidth, center[1] + hull->halfHeight, center[2] + hull->halfDepth);
+		else
 		{
+			// transform ray into box's local space because 
+			//	relative to itself the box is axis-aligned
+			a3rayTransform(rayCopy_tmp, ray, hull->transformInv->m);
+			hit_out->hitFlag = a3rayTestAABB_internal(hit_out, rayCopy_tmp->origin.v, rayCopy_tmp->direction.v, -hull->halfWidth, -hull->halfHeight, -hull->halfDepth, +hull->halfWidth, +hull->halfHeight, +hull->halfDepth);
+			
 			// set hit points in original space
-			a3real3ProductS(hit_out->hit0.v, ray->direction.v, hit_out->param0);
-			a3real3ProductS(hit_out->hit1.v, ray->direction.v, hit_out->param1);
-			a3real3Add(hit_out->hit0.v, ray->origin.v);
-			a3real3Add(hit_out->hit1.v, ray->origin.v);
+			if (hit_out->hitFlag)
+			{
+				a3real3ProductS(hit_out->hit0.v, ray->direction.v, hit_out->param0);
+				a3real3ProductS(hit_out->hit1.v, ray->direction.v, hit_out->param1);
+				a3real3Add(hit_out->hit0.v, ray->origin.v);
+				a3real3Add(hit_out->hit1.v, ray->origin.v);
+			}
 		}
-		return hit_out->hitFlag;
+		break;
+
+	case a3hullType_sphere:
+		// only one possible test here
+		hit_out->hitFlag = a3rayTestSphere_internal(hit_out, ray->origin.v, ray->direction.v, center, hull->radiusSq, diff_tmp);
+		break;
+
+	case a3hullType_cylinder:
+		// choose correct test
+		if (hull->length > a3realZero)
+			hit_out->hitFlag = a3rayTestCylinderFinite_internal(hit_out, ray->origin.v, ray->direction.v, center, normal, hull->radiusSq, hull->halfLength, diff_tmp);
+		else
+			hit_out->hitFlag = a3rayTestCylinder_internal(hit_out, ray->origin.v, ray->direction.v, center, normal, hull->radiusSq, diff_tmp);
+		break;
 	}
-	return 0;
+	return hit_out->hitFlag;
 }
 
 
