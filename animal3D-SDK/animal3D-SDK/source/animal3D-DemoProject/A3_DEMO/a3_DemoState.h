@@ -64,7 +64,7 @@ extern "C"
 	//	more than enough memory to hold extra objects
 	enum a3_DemoStateObjectMaxCounts
 	{
-		demoStateMaxCount_object = 8,
+		demoStateMaxCount_object = 16,
 		demoStateMaxCount_camera = 1,
 		demoStateMaxCount_light = 4,
 		demoStateMaxCount_sceneObject = demoStateMaxCount_object + demoStateMaxCount_camera + demoStateMaxCount_light,
@@ -72,7 +72,7 @@ extern "C"
 		demoStateMaxCount_timer = 1,
 		demoStateMaxCount_drawDataBuffer = 1,
 		demoStateMaxCount_vertexArray = 4,
-		demoStateMaxCount_drawable = 8,
+		demoStateMaxCount_drawable = 16,
 		demoStateMaxCount_shaderProgram = 8,
 	
 		demoStateMaxCount_texture = 4,
@@ -183,10 +183,12 @@ extern "C"
 					
 					skyboxObject[1],
 					planeObject[1],
-					sphereObject[1],
-					cylinderObject[1],
-					torusObject[1],
-					teapotObject[1];
+
+					sphereObject[2],
+					boxObject[2],
+					cylinderObject[2],
+					torusObject[2],
+					teapotObject[2];
 			};
 		};
 
@@ -239,9 +241,10 @@ extern "C"
 					draw_grid[1],								// wireframe ground plane to emphasize scaling
 					draw_axes[1],								// coordinate axes at the center of the world
 					draw_skybox[1],								// skybox cube mesh
-					draw_plane[1],								// procedural plane
-					draw_sphere[1],								// procedural sphere
-					draw_cylinder[1],							// procedural cylinder
+					draw_plane[1],								// procedural unit plane
+					draw_sphere[1],								// procedural unit sphere
+					draw_box[1],								// procedural unit box
+					draw_cylinder[1],							// procedural unit cylinder
 					draw_torus[1],								// procedural torus
 					draw_teapot[1];								// can't not have a Utah teapot
 			};

@@ -118,6 +118,65 @@ inline void a3demo_initializeText(a3_TextRenderer *text)
 
 
 //-----------------------------------------------------------------------------
+// internal setup functions
+
+void a3demo_setupPhysicsScene(a3_DemoState *demoState)
+{
+	a3_DemoSceneObject *currentObject;
+	a3_RigidBody *currentRB;
+
+	// wait for physics world to initialize
+	while (!demoState->physicsWorld->pw_init);
+
+	// set up scene objects based on physics info
+	currentObject = demoState->planeObject + 0;
+	currentRB = demoState->physicsWorld->testRB_plane + 0;
+	currentObject->scale.x = currentRB->convexHull->width;
+	currentObject->scale.y = currentRB->convexHull->height;
+	currentObject->scale.z = a3realOne;
+	currentObject->scaleMode = 2;
+
+	currentObject = demoState->sphereObject + 0;
+	currentRB = demoState->physicsWorld->testRB_sphere + 0;
+	currentObject->scale.x = currentRB->convexHull->radius;
+	currentObject->scaleMode = 1;
+
+	currentObject = demoState->sphereObject + 1;
+	currentRB = demoState->physicsWorld->testRB_sphere + 1;
+	currentObject->scale.x = currentRB->convexHull->radius;
+	currentObject->scaleMode = 1;
+
+	currentObject = demoState->boxObject + 0;
+	currentRB = demoState->physicsWorld->testRB_box + 0;
+	currentObject->scale.x = currentRB->convexHull->width;
+	currentObject->scale.y = currentRB->convexHull->height;
+	currentObject->scale.z = currentRB->convexHull->depth;
+	currentObject->scaleMode = 2;
+
+	currentObject = demoState->boxObject + 1;
+	currentRB = demoState->physicsWorld->testRB_box + 1;
+	currentObject->scale.x = currentRB->convexHull->width;
+	currentObject->scale.y = currentRB->convexHull->height;
+	currentObject->scale.z = currentRB->convexHull->depth;
+	currentObject->scaleMode = 2;
+
+	currentObject = demoState->cylinderObject + 0;
+	currentRB = demoState->physicsWorld->testRB_cylinder + 0;
+	currentObject->scale.x = currentRB->convexHull->length;
+	currentObject->scale.y = currentRB->convexHull->radius;
+	currentObject->scale.z = currentRB->convexHull->radius;
+	currentObject->scaleMode = 2;
+
+	currentObject = demoState->cylinderObject + 1;
+	currentRB = demoState->physicsWorld->testRB_cylinder + 1;
+	currentObject->scale.x = currentRB->convexHull->length;
+	currentObject->scale.y = currentRB->convexHull->radius;
+	currentObject->scale.z = currentRB->convexHull->radius;
+	currentObject->scaleMode = 2;
+}
+
+
+//-----------------------------------------------------------------------------
 // callback prototypes
 // NOTE: do not move to header; they should be private to this file
 // NOTE: you may name these functions whatever you like, just be sure to 
@@ -233,6 +292,7 @@ A3DYLIBSYMBOL a3_DemoState *a3demoCB_load(a3_DemoState *demoState, a3boolean hot
 
 	// start physics simulation on a separate thread
 	a3physicsWorldThreadInit(demoState->physicsWorld);
+	a3demo_setupPhysicsScene(demoState);
 	demoState->updateAnimation = 1;
 
 
@@ -448,6 +508,7 @@ A3DYLIBSYMBOL void a3demoCB_keyCharPress(a3_DemoState *demoState, a3i32 asciiKey
 	case 'H':
 		a3physicsWorldThreadTerm(demoState->physicsWorld);
 		a3physicsWorldThreadInit(demoState->physicsWorld);
+		a3demo_setupPhysicsScene(demoState);
 		demoState->updateAnimation = 1;
 		break;
 

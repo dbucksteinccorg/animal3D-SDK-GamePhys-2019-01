@@ -164,7 +164,7 @@ void a3demo_initScene(a3_DemoState *demoState)
 		pointLight->radiusInvSq = a3recip(pointLight->radius * pointLight->radius);
 	}
 
-
+/*
 	// position scene objects
 	demoState->sphereObject->scale.x = 1.0f;
 	demoState->cylinderObject->scale.x = 2.0f;
@@ -192,6 +192,7 @@ void a3demo_initScene(a3_DemoState *demoState)
 	//	demoState->cylinderObject->position.y = +8.0f;
 	//	demoState->teapotObject->position.y = -8.0f;
 	}
+*/
 }
 
 

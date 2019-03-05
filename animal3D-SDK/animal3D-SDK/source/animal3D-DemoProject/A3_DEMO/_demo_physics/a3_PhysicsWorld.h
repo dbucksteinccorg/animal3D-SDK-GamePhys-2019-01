@@ -35,7 +35,7 @@
 
 // physics includes
 #include "a3_RigidBody.h"
-#include "a3_Collision.h"
+#include "a3_Ray.h"
 
 
 //-----------------------------------------------------------------------------
@@ -44,7 +44,6 @@
 extern "C"
 {
 #else	// !__cplusplus
-	typedef struct a3_GraphicsWorldState	a3_GraphicsWorldState;
 	typedef struct a3_PhysicsWorldState		a3_PhysicsWorldState;
 	typedef struct a3_PhysicsWorld			a3_PhysicsWorld;
 #endif	// __cplusplus
@@ -55,19 +54,11 @@ extern "C"
 	// counters
 	enum a3_PhysicsWorldMaxCount
 	{
-		physicsWorldMaxCount_rigidbody = 4,
+		physicsWorldMaxCount_rigidbody = 16,
 	};
 
 
 //-----------------------------------------------------------------------------
-
-	// used to deliver and read stuff FROM graphics
-	//	-> graphics will WRITE transform
-	struct a3_GraphicsWorldState
-	{
-		// receive from graphics
-		a3mat4 transform_rigidbody[physicsWorldMaxCount_rigidbody];
-	};
 
 	// state of a physics world: things that can be used for graphics ONLY
 	//	-> graphics will READ position and rotation
@@ -76,6 +67,8 @@ extern "C"
 		// send to graphics
 		a3vec3 position_rigidbody[physicsWorldMaxCount_rigidbody];
 		a3quat rotation_rigidbody[physicsWorldMaxCount_rigidbody];
+		a3mat4 transform_rigidbody[physicsWorldMaxCount_rigidbody];
+		a3mat4 transformInv_rigidbody[physicsWorldMaxCount_rigidbody];
 
 		// active object counter
 		a3ui32 count_rigidbody;
@@ -89,7 +82,6 @@ extern "C"
 	{
 		// state to store all of the things that graphics will use
 		a3_PhysicsWorldState pw_state[1];
-		a3_GraphicsWorldState pw_state_g[1];
 
 		// dedicated timer
 		a3_Timer pw_timer[1];
@@ -109,23 +101,14 @@ extern "C"
 			a3_RigidBody rb[physicsWorldMaxCount_rigidbody];
 			struct {
 				a3_RigidBody
-					testRB_ship[4];
-			};
-			struct {
-				a3_RigidBody
-					testRB_sphere[1],
-					testRB_cylinder[1],
-					testRB_torus[1],
-					testRB_teapot[1];
+					testRB_plane[1],
+					testRB_sphere[2],
+					testRB_box[2],
+					testRB_cylinder[2],
+					testRB_torus[2],
+					testRB_teapot[2];
 			};
 		};
-
-
-		// descriptors for objects that can be hit by rays
-		a3mat4 tmpPlaneTransform;
-		a3real tmpPlaneWidth, tmpPlaneHeight;
-		a3real tmpSphereRadius;
-		a3real tmpCylinderRadius, tmpCylinderHeight;
 
 		// the ray and ray hit
 		a3_Ray tmpRay[1];

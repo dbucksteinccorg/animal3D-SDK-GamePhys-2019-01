@@ -95,6 +95,9 @@ void a3demo_update(a3_DemoState *demoState, a3f64 dt)
 	// tmp matrix for scale
 	a3mat4 scaleMat = a3identityMat4;
 
+	// object pointer
+	a3_DemoSceneObject *currentObject;
+
 	// active camera
 	a3_DemoCamera *camera = demoState->camera + demoState->activeCamera;
 	a3_DemoSceneObject *cameraObject = camera->sceneObject;
@@ -159,31 +162,24 @@ void a3demo_update(a3_DemoState *demoState, a3f64 dt)
 	//	7) unlock world
 	if (a3physicsWorldLock(demoState->physicsWorld) > 0)
 	{
-		a3_DemoSceneObject *currentObject;
 		a3_PhysicsWorldState state_copy[1] = { *demoState->physicsWorld->pw_state };
-		a3_GraphicsWorldState state_copy_g[1] = { *demoState->physicsWorld->pw_state_g };
 		a3physicsWorldUnlock(demoState->physicsWorld);
 
 		// read and update
-		for (i = 0, currentObject = demoState->sphereObject;
+		for (i = 0, currentObject = demoState->planeObject;
 			i < state_copy->count_rigidbody;
 			++i, ++currentObject)
 		{
+			// copy matrices
+			currentObject->modelMat = state_copy->transform_rigidbody[i];
+			currentObject->modelMatInv = state_copy->transformInv_rigidbody[i];
+
 			// copy position
 			currentObject->position = state_copy->position_rigidbody[i];
 
-			// convert rotation and position to transform
-			a3quatConvertToMat4Translate(currentObject->modelMat.m, state_copy->rotation_rigidbody[i].q, currentObject->position.v);
-
-			// copy transform
-			state_copy_g->transform_rigidbody[i] = currentObject->modelMat;
-		}
-
-		// write
-		if (a3physicsWorldLock(demoState->physicsWorld) > 0)
-		{
-			*demoState->physicsWorld->pw_state_g = *state_copy_g;
-			a3physicsWorldUnlock(demoState->physicsWorld);
+			// optional: convert orientation to Euler angles
+		//	a3quatGetEulerZYX(state_copy->rotation_rigidbody[i].q,
+		//		currentObject->euler.v + 0, currentObject->euler.v + 1, currentObject->euler.v + 2);
 		}
 	}
 
@@ -195,7 +191,8 @@ void a3demo_update(a3_DemoState *demoState, a3f64 dt)
 		a3real4x4ConcatL(demoState->planeObject->modelMat.m, convertZ2Y.m);
 
 		// sphere's axis is Z
-		a3real4x4ConcatL(demoState->sphereObject->modelMat.m, convertZ2Y.m);
+		a3real4x4ConcatL(demoState->sphereObject[0].modelMat.m, convertZ2Y.m);
+		a3real4x4ConcatL(demoState->sphereObject[1].modelMat.m, convertZ2Y.m);
 	}
 	else
 	{
@@ -203,15 +200,16 @@ void a3demo_update(a3_DemoState *demoState, a3f64 dt)
 		a3real4x4ConcatL(demoState->skyboxObject->modelMat.m, convertY2Z.m);
 
 		// teapot's axis is Y
-		a3real4x4ConcatL(demoState->teapotObject->modelMat.m, convertY2Z.m);
+		a3real4x4ConcatL(demoState->teapotObject[0].modelMat.m, convertY2Z.m);
+		a3real4x4ConcatL(demoState->teapotObject[1].modelMat.m, convertY2Z.m);
 	}
 
 
 	// apply scales
-	a3demo_applyScale_internal(demoState->sphereObject, scaleMat.m);
-	a3demo_applyScale_internal(demoState->cylinderObject, scaleMat.m);
-	a3demo_applyScale_internal(demoState->torusObject, scaleMat.m);
-	a3demo_applyScale_internal(demoState->teapotObject, scaleMat.m);
+	for (i = 0, currentObject = demoState->planeObject;
+		currentObject <= demoState->teapotObject + 1;
+		++i, ++currentObject)
+		a3demo_applyScale_internal(currentObject, scaleMat.m);
 }
 
 
