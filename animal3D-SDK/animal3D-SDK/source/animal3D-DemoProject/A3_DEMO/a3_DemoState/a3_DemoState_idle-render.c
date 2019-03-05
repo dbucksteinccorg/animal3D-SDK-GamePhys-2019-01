@@ -178,6 +178,12 @@ void a3demo_render(const a3_DemoState *demoState)
 		demoState->tex_checker,
 		demoState->tex_checker,
 		demoState->tex_checker,
+		demoState->tex_checker,
+		demoState->tex_checker,
+		demoState->tex_checker,
+		demoState->tex_checker,
+		demoState->tex_checker,
+		demoState->tex_checker,
 	};
 	const a3_Texture *tex_sm[] = {
 		demoState->tex_checker,
@@ -185,6 +191,26 @@ void a3demo_render(const a3_DemoState *demoState)
 		demoState->tex_checker,
 		demoState->tex_checker,
 		demoState->tex_checker,
+		demoState->tex_checker,
+		demoState->tex_checker,
+		demoState->tex_checker,
+		demoState->tex_checker,
+		demoState->tex_checker,
+		demoState->tex_checker,
+	};
+
+	const a3_VertexDrawable *drawable[] = {
+		demoState->draw_plane,
+		demoState->draw_sphere,
+		demoState->draw_sphere,
+		demoState->draw_box,
+		demoState->draw_box,
+		demoState->draw_cylinder,
+		demoState->draw_cylinder,
+		demoState->draw_torus,
+		demoState->draw_torus,
+		demoState->draw_teapot,
+		demoState->draw_teapot,
 	};
 
 
@@ -286,10 +312,10 @@ void a3demo_render(const a3_DemoState *demoState)
 			//	- modelviewprojection
 			//	- modelview
 			//	- modelview for normals
-			for (k = 0, currentDrawable = demoState->draw_plane,
-				currentSceneObject = demoState->planeObject, endSceneObject = demoState->teapotObject;
+			for (k = 0,
+				currentSceneObject = demoState->planeObject, endSceneObject = demoState->teapotObject + 1;
 				currentSceneObject <= endSceneObject;
-				++k, ++currentDrawable, ++currentSceneObject)
+				++k, ++currentSceneObject)
 			{
 				a3textureActivate(tex_dm[k], a3tex_unit00);
 				a3textureActivate(tex_sm[k], a3tex_unit01);
@@ -300,6 +326,8 @@ void a3demo_render(const a3_DemoState *demoState)
 				a3demo_quickInvertTranspose_internal(modelViewMat.m);
 				modelViewMat.v3 = a3zeroVec4;
 				a3shaderUniformSendFloatMat(a3unif_mat4, 0, currentDemoProgram->uMV_nrm, 1, modelViewMat.mm);
+				
+				currentDrawable = drawable[k];
 				a3vertexDrawableActivateAndRender(currentDrawable);
 			}
 			break;
@@ -380,7 +408,7 @@ void a3demo_render(const a3_DemoState *demoState)
 	if (demoState->displayObjectAxes)
 	{
 		for (k = 0, 
-			currentSceneObject = demoState->planeObject, endSceneObject = demoState->teapotObject; 
+			currentSceneObject = demoState->planeObject, endSceneObject = demoState->teapotObject + 1; 
 			currentSceneObject <= endSceneObject; 
 			++k, ++currentSceneObject)
 		{
@@ -405,17 +433,24 @@ void a3demo_render(const a3_DemoState *demoState)
 	if (demoState->displayOverlay && a3textIsInitialized(demoState->text_overlay))
 	{
 		const a3byte *displayText[] = {
-			"ship0",
-			"ship1",
-			"ship2",
-			"ship3",
+			"plane",
+			"sphere0",
+			"sphere1",
+			"box0",
+			"box1",
+			"cylinder0",
+			"cylinder1",
+			"torus0",
+			"torus1",
+			"teapot0",
+			"teapot1",
 		};
 		const a3vec4 *colorPtr;
 		a3vec4 textPos;
 
 		glDisable(GL_DEPTH_TEST);
-		for (i = 0, currentSceneObject = demoState->sphereObject;
-			currentSceneObject <= demoState->teapotObject;
+		for (i = 0, currentSceneObject = demoState->planeObject;
+			currentSceneObject <= demoState->teapotObject + 1;
 			++i, ++currentSceneObject)
 		{
 			// copy and adjust object position in world
@@ -427,7 +462,7 @@ void a3demo_render(const a3_DemoState *demoState)
 			a3real3DivS(textPos.v, textPos.w);
 
 			// select color and display
-			colorPtr = rgba4 + i;
+			colorPtr = rgba4 + i % 8;
 			a3textDraw(demoState->text_overlay, textPos.x, textPos.y, textPos.z,
 				colorPtr->r, colorPtr->g, colorPtr->b, colorPtr->a, displayText[i]);
 		}

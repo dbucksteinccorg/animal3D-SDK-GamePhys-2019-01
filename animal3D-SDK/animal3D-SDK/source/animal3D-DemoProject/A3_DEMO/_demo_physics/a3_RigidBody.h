@@ -27,6 +27,7 @@
 
 
 #include "a3_Particle.h"
+#include "a3_Collision.h"
 
 
 //-----------------------------------------------------------------------------
@@ -49,6 +50,12 @@ extern "C"
 	{
 		// particle is "component" attached to make it move
 		a3_RigidBodyMotionController motionController[1];
+
+		// hull is "component" attached to allow collisions
+		a3_ConvexHull convexHull[1];
+
+		// index in whatever manager contains this rigidbody
+		a3ui32 index;
 	};
 
 

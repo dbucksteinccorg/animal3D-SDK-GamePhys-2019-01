@@ -26,8 +26,8 @@
 #define __ANIMAL3D_RAY_H
 
 
-// math library
-#include "animal3D-A3DM/animal3D-A3DM.h"
+// collision
+#include "a3_Collision.h"
 
 
 //-----------------------------------------------------------------------------
@@ -38,7 +38,6 @@ extern "C"
 #else	// !__cplusplus
 	typedef struct a3_Ray				a3_Ray;
 	typedef struct a3_RayHit			a3_RayHit;
-	typedef enum a3_Axis				a3_Axis;
 #endif	// __cplusplus
 
 	
@@ -57,14 +56,6 @@ extern "C"
 		a3vec4 hit0, hit1;		// near and far point of intersection
 		a3real param0, param1;	// relative scales along ray
 		a3boolean hitFlag;
-	};
-
-	// axis
-	enum a3_Axis
-	{
-		a3axis_x,	// index 0 in a matrix
-		a3axis_y,	// index 1 in a matrix
-		a3axis_z,	// index 2 in a matrix
 	};
 
 
@@ -91,30 +82,9 @@ extern "C"
 
 //-----------------------------------------------------------------------------
 
-	// pick against infinite plane
-	inline a3i32 a3rayTestPlane(a3_RayHit *hit_out, const a3_Ray *ray, const a3_Axis normalAxis, const a3real4x4p transform);
+	// pick against convex hull
+	inline a3i32 a3rayTestConvexHull(a3_RayHit *hit_out, const a3_Ray *ray, const a3_ConvexHull *hull);
 
-	// pick against finite plane
-	inline a3i32 a3rayTestPlaneFinite(a3_RayHit *hit_out, const a3_Ray *ray, const a3_Axis normalAxis, const a3real width, const a3real height, const a3real4x4p transform);
-
-	// pick against disc
-	inline a3i32 a3rayTestDisc(a3_RayHit *hit_out, const a3_Ray *ray, const a3_Axis normalAxis, const a3real radius, const a3real4x4p transform);
-
-	// pick against sphere
-	inline a3i32 a3rayTestSphere(a3_RayHit *hit_out, const a3_Ray *ray, const a3real radius, const a3real4x4p transform);
-
-	// pick against infinite cylinder
-	inline a3i32 a3rayTestCylinder(a3_RayHit *hit_out, const a3_Ray *ray, const a3_Axis normalAxis, const a3real radius, const a3real4x4p transform);
-
-	// pick against finite cylinder
-	inline a3i32 a3rayTestCylinderFinite(a3_RayHit *hit_out, const a3_Ray *ray, const a3_Axis normalAxis, const a3real radius, const a3real length, const a3real4x4p transform);
-
-	// pick against axis-aligned box
-	inline a3i32 a3rayTestAxisAlignedBox(a3_RayHit *hit_out, const a3_Ray *ray, const a3real width, const a3real height, const a3real depth, const a3real4x4p transform);
-
-	// pick against bounding box
-	inline a3i32 a3rayTestBoundingBox(a3_RayHit *hit_out, const a3_Ray *ray, const a3real width, const a3real height, const a3real depth, const a3real4x4p transform, const a3real4x4p transformInv);
-	
 
 //-----------------------------------------------------------------------------
 
