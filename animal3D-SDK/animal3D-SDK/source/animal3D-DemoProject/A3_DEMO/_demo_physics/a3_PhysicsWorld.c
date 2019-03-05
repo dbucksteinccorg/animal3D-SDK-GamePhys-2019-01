@@ -35,13 +35,22 @@ void a3physicsInitialize_internal(a3_PhysicsWorld *world)
 	// generic counter
 	a3ui32 i;
 
+	// tmp rb pointer and values
+	a3_RigidBody *currentRB;
+
+	const a3real amplitude = (a3real)10;
+	a3real param;
+
 	// hard-set random seed for predictability (i.e. scenario replication)
 	a3randomSetSeed(0);
 
 
 	// reset all physics objects
 	for (i = 0; i < physicsWorldMaxCount_rigidbody; ++i)
+	{
+		world->rb[i].index = i;
 		a3particleReset(world->rb[i].motionController);
+	}
 
 
 	// ****TO-DO: 
@@ -51,33 +60,97 @@ void a3physicsInitialize_internal(a3_PhysicsWorld *world)
 	//	-> static masses
 	//	-> local centers of mass
 	//	-> local inertia tensors
-	world->testRB_sphere->motionController->position.y = -a3realSix;
-	world->testRB_cylinder->motionController->position.y = -a3realTwo;
-	world->testRB_torus->motionController->position.y = +a3realTwo;
-	world->testRB_teapot->motionController->position.y = +a3realSix;
+	world->testRB_plane[0].motionController->position.z = -a3realTwo;
+	for (i = 0, currentRB = world->testRB_sphere; i < 10; ++i, ++currentRB)
+	{
+		// starting positions
+		param = (a3real)(i * 36);
+		currentRB->motionController->position.x = amplitude * a3cosd(param);
+		currentRB->motionController->position.y = amplitude * a3sind(param);
 
-	// match tensors to models
-	i = 1;
-	a3particleSetMass(world->testRB_ship[i].motionController, a3realFive);
-	a3particleSetLocalInertiaTensorCylinderSolid(world->testRB_ship[i].motionController, a3realOne, a3realFour, 0);
+		// random rotations for every other object
+		if (i % 2)
+			a3quatSetEulerZYX(currentRB->motionController->rotation.q,
+				a3randomSymmetric() * a3realThreeSixty,
+				a3randomSymmetric() * a3realThreeSixty,
+				a3randomSymmetric() * a3realThreeSixty);
+	}
+
+
+	// set up collision hulls and match tensors to models
+	currentRB = world->testRB_plane;
+	a3collisionHullCreatePlane(currentRB->convexHull,
+		world->pw_state->transform_rigidbody + currentRB->index,
+		world->pw_state->transformInv_rigidbody + currentRB->index,
+		(a3real)24, (a3real)24, a3true, a3axis_z);
+
+	currentRB = world->testRB_sphere + 0;
+	a3collisionHullCreateSphere(currentRB->convexHull,
+		world->pw_state->transform_rigidbody + currentRB->index,
+		world->pw_state->transformInv_rigidbody + currentRB->index,
+		a3realOneHalf);
+	a3particleSetMass(currentRB->motionController, a3realTwo);
+	a3particleSetLocalInertiaTensorSphereSolid(currentRB->motionController,
+		currentRB->convexHull->radius);
+	
+	currentRB = world->testRB_sphere + 1;
+	a3collisionHullCreateSphere(currentRB->convexHull,
+		world->pw_state->transform_rigidbody + currentRB->index,
+		world->pw_state->transformInv_rigidbody + currentRB->index,
+		a3realTwo);
+	a3particleSetMass(currentRB->motionController, a3realFour);
+	a3particleSetLocalInertiaTensorSphereSolid(currentRB->motionController,
+		currentRB->convexHull->radius);
+
+	currentRB = world->testRB_box + 0;
+	a3collisionHullCreateBox(currentRB->convexHull,
+		world->pw_state->transform_rigidbody + currentRB->index,
+		world->pw_state->transformInv_rigidbody + currentRB->index,
+		a3realOne, a3realOneHalf, a3realTwo, a3true);
+	a3particleSetMass(currentRB->motionController, a3realTwo);
+	a3particleSetLocalInertiaTensorBoxSolid(currentRB->motionController,
+		currentRB->convexHull->width, currentRB->convexHull->height, currentRB->convexHull->depth);
+	
+	currentRB = world->testRB_box + 1;
+	a3collisionHullCreateBox(currentRB->convexHull,
+		world->pw_state->transform_rigidbody + currentRB->index,
+		world->pw_state->transformInv_rigidbody + currentRB->index,
+		a3realOne, a3realHalf, a3realHalf, a3false);
+	a3particleSetMass(currentRB->motionController, a3realFour);
+	a3particleSetLocalInertiaTensorBoxSolid(currentRB->motionController,
+		currentRB->convexHull->width, currentRB->convexHull->height, currentRB->convexHull->depth);
+	
+	currentRB = world->testRB_cylinder + 0;
+	a3collisionHullCreateCylinder(currentRB->convexHull,
+		world->pw_state->transform_rigidbody + currentRB->index,
+		world->pw_state->transformInv_rigidbody + currentRB->index,
+		a3realOne, a3realFour, a3axis_x);
+	a3particleSetMass(currentRB->motionController, a3realTwo);
+	a3particleSetLocalInertiaTensorCylinderSolid(currentRB->motionController,
+		currentRB->convexHull->radius, currentRB->convexHull->height, currentRB->convexHull->normalAxis);
+	
+	currentRB = world->testRB_cylinder + 1;
+	a3collisionHullCreateCylinder(currentRB->convexHull,
+		world->pw_state->transform_rigidbody + currentRB->index,
+		world->pw_state->transformInv_rigidbody + currentRB->index,
+		a3realHalf, a3realOneHalf, a3axis_x);
+	a3particleSetMass(currentRB->motionController, a3realFour);
+	a3particleSetLocalInertiaTensorCylinderSolid(currentRB->motionController,
+		currentRB->convexHull->radius, currentRB->convexHull->height, currentRB->convexHull->normalAxis);
+
+	currentRB = world->testRB_torus + 0;
+	a3particleSetMass(currentRB->motionController, a3realZero);
+	currentRB = world->testRB_torus + 1;
+	a3particleSetMass(currentRB->motionController, a3realZero);
+	currentRB = world->testRB_teapot + 0;
+	a3particleSetMass(currentRB->motionController, a3realZero);
+	currentRB = world->testRB_teapot + 1;
+	a3particleSetMass(currentRB->motionController, a3realZero);
 
 
 	// reset states
 	a3physicsWorldStateReset(world);
-	world->pw_state->count_rigidbody = 4;
-
-
-	// ray test
-	{
-		// copy data from renderer for now
-		// wouldn't it be nice if they could share???
-		world->tmpPlaneTransform = a3identityMat4;
-		world->tmpPlaneTransform.m32 = -2.0f;
-		world->tmpPlaneWidth = world->tmpPlaneHeight = 24.0f;
-		world->tmpSphereRadius = 1.0f;
-		world->tmpCylinderRadius = 1.0f;
-		world->tmpCylinderHeight = 4.0f;
-	}
+	world->pw_state->count_rigidbody = 11;
 
 
 	// done
@@ -157,7 +230,6 @@ a3ret a3physicsWorldUpdate(a3_PhysicsWorld *world, a3f64 dt)
 {
 	// copy of state to edit before committing writing to world
 	a3_PhysicsWorldState state_copy[1] = { *world->pw_state };
-	a3_GraphicsWorldState state_copy_g[1] = { *world->pw_state_g };
 
 	// generic counter
 	a3ui32 i;
@@ -165,6 +237,10 @@ a3ret a3physicsWorldUpdate(a3_PhysicsWorld *world, a3f64 dt)
 	// time as real
 	const a3real t_r = (a3real)(world->pw_timer->totalTime);
 	const a3real dt_r = (a3real)(dt);
+
+	const a3real frequency = (a3real)15;
+	const a3real amplitude = (a3real)10;
+	a3real param;
 
 	// tmp force vectors
 //	a3vec3 f_gravity;
@@ -181,30 +257,31 @@ a3ret a3physicsWorldUpdate(a3_PhysicsWorld *world, a3f64 dt)
 //	const a3vec3 springyAnchor = { 0.0f, 0.0f, 10.0f };
 //	const a3vec3 slippyForce = { 0.0f, 5.0f, 0.0f };
 
-	a3vec3 forceAmount, forceLocation;
-	a3mat4 tmpMat;
+//	a3vec3 forceAmount, forceLocation;
+//	a3mat4 tmpMat;
 
 
 	// ****TO-DO: 
 	// update physics objects 
 	//	- reset and apply forces and torques
-	//	- integrate
+	//	- integrate (raw position and rotation)
+	//	- convert to linear (matrices)
 	//	- force and torque conversions
 	//	- additional tasks (e.g. clamp position)
 
-	// test cylinder
-	i = 1;
-	currentRB = world->testRB_ship + i;
-	a3particleResetForce(currentRB->motionController);
-	a3particleResetTorque(currentRB->motionController);
-
-	// calculate test force: touch a point on the cylinder
-	tmpMat = state_copy_g->transform_rigidbody[i];
-	forceAmount = tmpMat.v1.xyz;
-	forceLocation = tmpMat.v3.xyz;
-	a3real3Add(forceLocation.v, tmpMat.v0.v);
-	a3real3Sub(forceLocation.v, tmpMat.v1.v);
-	a3particleApplyForceLocation(currentRB->motionController, forceAmount.v, forceLocation.v);
+//	// test cylinder
+//	i = 1;
+//	currentRB = world->testRB_ship + i;
+//	a3particleResetForce(currentRB->motionController);
+//	a3particleResetTorque(currentRB->motionController);
+//
+//	// calculate test force: touch a point on the cylinder
+//	tmpMat = state_copy->transform_rigidbody[i];
+//	forceAmount = tmpMat.v1.xyz;
+//	forceLocation = tmpMat.v3.xyz;
+//	a3real3Add(forceLocation.v, tmpMat.v0.v);
+//	a3real3Sub(forceLocation.v, tmpMat.v1.v);
+//	a3particleApplyForceLocation(currentRB->motionController, forceAmount.v, forceLocation.v);
 
 	for (i = 0, currentRB = world->rb;
 		i < state_copy->count_rigidbody;
@@ -213,19 +290,35 @@ a3ret a3physicsWorldUpdate(a3_PhysicsWorld *world, a3f64 dt)
 		a3particleIntegrateEulerKinematic(currentRB->motionController, dt_r);
 		a3particleConvertForce(currentRB->motionController);
 		a3particleConvertTorque(currentRB->motionController);
-		a3particleUpdateCenterOfMass(currentRB->motionController, state_copy_g->transform_rigidbody[i].m);
-		a3particleUpdateInertiaTensor(currentRB->motionController, state_copy_g->transform_rigidbody[i].m);
+		a3particleUpdateCenterOfMass(currentRB->motionController, state_copy->transform_rigidbody[i].m);
+		a3particleUpdateInertiaTensor(currentRB->motionController, state_copy->transform_rigidbody[i].m);
 	}
 
-//	if (world->testRB_ship->motionController->position.z < a3realZero)
-//		world->testRB_ship->motionController->position.z = a3realZero;
+	// tmp position settings
+	// make alternating models orbit center of world in opposite direction
+	for (i = 0, currentRB = world->testRB_sphere; i < 10; ++i, ++currentRB)
+	{
+		param = a3trigValid_sind((a3real)(i * 36) + t_r * frequency);
+		if (i % 2) param = -param;
+		currentRB->motionController->position.x = amplitude * a3cosd(param);
+		currentRB->motionController->position.y = amplitude * a3sind(param);
+	}
 
 
 	// update state
 	for (i = 0; i < state_copy->count_rigidbody; ++i)
 	{
+		// copy raw position and rotation
 		state_copy->position_rigidbody[i] = world->rb[i].motionController->position;
 		state_copy->rotation_rigidbody[i] = world->rb[i].motionController->rotation;
+
+		// convert to matrix for collisions
+		a3quatConvertToMat4Translate(
+			state_copy->transform_rigidbody[i].m,
+			state_copy->rotation_rigidbody[i].q, state_copy->position_rigidbody[i].v);
+		a3real4x4TransformInverseIgnoreScale(
+			state_copy->transformInv_rigidbody[i].m,
+			state_copy->transform_rigidbody[i].m);
 	}
 
 
@@ -263,7 +356,8 @@ a3ret a3physicsWorldStateReset(a3_PhysicsWorld *world)
 		{
 			world->pw_state->position_rigidbody[i] = a3zeroVec3;
 			world->pw_state->rotation_rigidbody[i] = a3identityQuat;
-			world->pw_state_g->transform_rigidbody[i] = a3identityMat4;
+			world->pw_state->transform_rigidbody[i] = a3identityMat4;
+			world->pw_state->transformInv_rigidbody[i] = a3identityMat4;
 		}
 		return i;
 	}
@@ -343,28 +437,17 @@ extern inline a3ret a3physicsWorldUnlock(a3_PhysicsWorld *world)
 // ray test
 void a3physicsWorldRayTest(a3_PhysicsWorld *world)
 {
+	a3ui32 i;
 	a3_RayHit tmpRayHit[1];
 	a3rayHitReset(world->tmpRayHit, world->tmpRay);
 	world->tmpRayHit->param0 = a3realOneHundred;
 
-	// test against each object
-	if (a3rayTestPlaneFinite(tmpRayHit, world->tmpRay, a3axis_z,
-		world->tmpPlaneWidth, world->tmpPlaneHeight, world->tmpPlaneTransform.m) &&
-		a3rayHitValidate(tmpRayHit) &&
-		tmpRayHit->param0 <= world->tmpRayHit->param0)
-		*world->tmpRayHit = *tmpRayHit;
-
-	if (a3rayTestSphere(tmpRayHit, world->tmpRay,
-		world->tmpSphereRadius, world->pw_state_g->transform_rigidbody[0].m) &&
-		a3rayHitValidate(tmpRayHit) &&
-		tmpRayHit->param0 <= world->tmpRayHit->param0)
-		*world->tmpRayHit = *tmpRayHit;
-
-	if (a3rayTestCylinderFinite(tmpRayHit, world->tmpRay, a3axis_x,
-		world->tmpCylinderRadius, world->tmpCylinderHeight, world->pw_state_g->transform_rigidbody[1].m) &&
-		a3rayHitValidate(tmpRayHit) &&
-		tmpRayHit->param0 <= world->tmpRayHit->param0)
-		*world->tmpRayHit = *tmpRayHit;
+	// test against each object, keep closest hit
+	for (i = 0; i < world->pw_state->count_rigidbody; ++i)
+		if (a3rayTestConvexHull(tmpRayHit, world->tmpRay, world->rb[i].convexHull) &&
+			a3rayHitValidate(tmpRayHit) &&
+			tmpRayHit->param0 <= world->tmpRayHit->param0)
+			*world->tmpRayHit = *tmpRayHit;
 }
 
 
